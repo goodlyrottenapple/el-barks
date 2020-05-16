@@ -1,0 +1,48 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "userGames": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        
+      }
+    },
+    "userFriends": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "game": {
+      "$gameID": {
+        "scrabbleBag": {
+          ".read": "root.child('userGames/'+auth.uid+'/'+$gameID).exists()",
+          ".write": "root.child('userGames/'+auth.uid+'/'+$gameID).exists()",
+        },
+        "public": {
+          ".read": "root.child('userGames/'+auth.uid+'/'+$gameID).exists()",
+      		"players": {
+            "$i":{
+              ".write": "data.child('email').val() === auth.token.email"
+            }
+          },
+            
+          "board": {
+            ".write" : "root.child('userGames/'+auth.uid+'/'+$gameID).exists()"
+          },
+          "userTurn": {
+            ".write" : "root.child('userGames/'+auth.uid+'/'+$gameID).exists()"
+          }
+        },
+        "private": {
+          "$i":{
+            ".read": "data.child('email').val() === auth.token.email",
+            ".write": "data.child('email').val() === auth.token.email"
+          }
+        }
+      }
+    }
+  }
+}
