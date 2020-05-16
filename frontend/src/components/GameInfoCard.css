@@ -1,0 +1,105 @@
+.GameInfoCard {
+  cursor: pointer;
+  border: 2px solid #E63328;
+  /*outline-offset: -5px;*/
+  display: flex;
+  position: relative;
+  margin: 5px;
+  flex-grow:1;
+  /*flex-shrink:1;*/
+  min-width:460px;
+  width:460px;
+  height: 200px;
+  color: black;
+  text-decoration: none;
+}
+
+.GameInfoCard:hover {
+  background-color: #F7B8A2;
+}
+
+
+.GameInfoCard > .Loader {
+  display: block;
+  width:150px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 50px; 
+}
+
+.CancelGame {
+	position: absolute;
+	top:10px;
+	right: 10px;
+	font-size: 30px;
+}
+
+.CancelGame:hover {
+	color: grey;
+}
+
+
+.GameInfo {
+  overflow: hidden;
+  margin: 10px;
+  width: 100%;
+}
+
+.GameInfo >.Date {
+  display:table; /* Enable line-wrapping in IE8+ */
+  white-space:normal;
+  padding-right: 30px;
+}
+
+.NewGame {
+  color: #E63328;
+  margin: auto;
+  font-family: Monteka;
+  font-size: 2em;
+}
+
+.AddIcon{
+	margin-bottom: -2px;
+	margin-right: 5px; 
+}
+
+.GameInfoCard ul {
+  list-style-type: none;
+  overflow: hidden;
+  margin-top: 0;
+  padding: 0;
+}
+
+.GameInfoCard li > div {
+  display: inline-block;
+  width: calc(100% - 35px);
+  overflow: hidden;
+  text-overflow:ellipsis;
+}
+
+.GameInfoCard li > svg {
+  /*padding-bottom: 3px;*/
+}
+
+.Status {
+  margin-bottom: -3px;
+  color: #10ADE5;
+}
+
+.Playing {
+  color: #31AB59;
+  font-size: 20px;
+  margin-bottom: -4px;
+}
+
+.Pending {
+  color: #EA5B0C;
+  font-size: 14px;
+  margin-bottom: 3px;
+  margin-left: 3px;
+}
+
+.Winner {
+  font-size: 16px;
+  color: #FFCC00;
+}

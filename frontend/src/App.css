@@ -1,0 +1,144 @@
+
+
+@font-face {
+  font-family: Monteka;
+  src: url(./assets/fonts/manteka.otf);
+}
+
+/* dm-mono-regular - latin */
+@font-face {
+  font-family: 'DM Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./assets/fonts/dm-mono-v1-latin-regular.eot'); /* IE9 Compat Modes */
+  src: local('DM Mono Regular'), local('DMMono-Regular'),
+       url('./assets/fonts/dm-mono-v1-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('./assets/fonts/dm-mono-v1-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
+       url('./assets/fonts/dm-mono-v1-latin-regular.woff') format('woff'), /* Modern Browsers */
+       url('./assets/fonts/dm-mono-v1-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('./assets/fonts/dm-mono-v1-latin-regular.svg#DMMono') format('svg'); /* Legacy iOS */
+}
+
+/* dm-mono-500 - latin */
+@font-face {
+  font-family: 'DM Mono';
+  font-style: normal;
+  font-weight: 500;
+  src: url('./assets/fonts/dm-mono-v1-latin-500.eot'); /* IE9 Compat Modes */
+  src: local('DM Mono Medium'), local('DMMono-Medium'),
+       url('./assets/fonts/dm-mono-v1-latin-500.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('./assets/fonts/dm-mono-v1-latin-500.woff2') format('woff2'), /* Super Modern Browsers */
+       url('./assets/fonts/dm-mono-v1-latin-500.woff') format('woff'), /* Modern Browsers */
+       url('./assets/fonts/dm-mono-v1-latin-500.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('./assets/fonts/dm-mono-v1-latin-500.svg#DMMono') format('svg'); /* Legacy iOS */
+}
+
+body {
+  background-color: #E9E4D1;
+  font-family: 'DM Mono'
+}
+
+input {
+  font-family: 'DM Mono';
+  -moz-box-sizing:    border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing:        border-box;
+}
+
+
+button {
+  cursor: pointer;
+}
+
+.Loader{
+	display: block;
+	width:150px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 45vh; 
+}
+
+
+.ErrorModal, .EditModal, .EndModal, .WinModal {
+  min-width: 600px;
+  width: 50%;
+  margin:auto;
+  margin-top: calc(50vh - 300px);
+  padding:20px;
+  color: #E9E4D1;
+}
+
+.ErrorModal {
+  background-color: #E63328;
+}
+
+.EditModal {
+  background-color: #31AB59;
+}
+
+.EndModal {
+  background-color: grey;
+}
+
+
+.WinModal {
+  background-color: #A86216;
+}
+
+.ErrorModal h1, .EditModal h1, .EndModal h1, .WinModal h1 {
+  font-family: Monteka;
+  margin-top: 0px;
+}
+
+.ErrorModal p {
+  font-size: 20px;
+}
+
+/*.ErrorModal button, .EditModal button {
+  font-family: Monteka;
+  font-size: 30px;
+  color: #E9E4D1;
+  background: none;
+  border: 2px solid #E9E4D1;
+}*/
+
+
+.Button {
+  font-family: Monteka;
+  font-size: 30px;
+  background: none;
+  border: 2px solid black;
+}
+
+.Button:hover {
+  background-color: grey;
+}
+
+
+.Green {
+  color: #31AB59;
+  border: 2px solid #31AB59;
+}
+
+.Green:hover {
+  background-color: #9CCD9C;
+}
+
+
+.White, .WhiteRed, .WhiteBlack {
+  color: #E9E4D1;
+  border: 2px solid #E9E4D1;
+}
+
+.White:hover {
+  background-color: #9CCD9C;
+}
+
+
+.WhiteRed:hover {
+  background-color: #EC644B;
+}
+
+.WhiteBlack:hover {
+  background-color: black;
+}

@@ -1,0 +1,166 @@
+.Game {
+  display: flex;
+  /*flex-wrap: wrap;*/
+  justify-content: flex-start;
+  align-items: flex-start;
+  /*padding-bottom: 50px*/
+}
+
+
+.Game .Heading {
+  margin-left: auto;
+  margin-right: auto;
+  font-family: Monteka;
+  width: 110px;
+  margin-top: 3em;
+}
+
+
+.Sidebar {
+  width:200px;
+  display: flex;
+  flex-flow: column wrap;
+}
+
+.ButtonGroup {
+  padding-top: 2em;
+}
+
+.Logo {
+  height: 200px;
+  width: 200px;
+}
+
+
+@media only screen and (max-width: 770px) {
+  .Game {
+    flex-wrap: wrap;
+  }
+
+  .Sidebar {
+    width: 100%;
+    flex-flow: row wrap;
+  }
+
+  .Logo {
+    height: 180px;
+    width: 180px;
+  }
+
+  .Logo, .ButtonGroup {
+    padding-right: 2em;
+  }
+
+  .Scores {
+    padding-top: 1em;
+  }
+
+  .Scores > .Heading {
+    display: none;
+  }
+
+  .Board {
+    margin-top: -1.3em;
+  }
+}
+
+
+@media only screen and (max-width: 570px) {
+  .Logo {
+    height: 120px;
+    width: 120px;
+  }
+
+  .ButtonGroup {
+    padding-top: 0;
+  }
+
+  .Scores {
+    display: flex;
+    flex-wrap: wrap;
+    padding-top: 2em;
+    padding-bottom: 2em;
+  }
+
+  .Scores div {
+    flex-shrink: 1;
+    width: 180px;
+  }
+
+  .Scores > .Heading {
+    display: none;
+  }
+}
+
+
+/*.Sidebar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  margin-top: 40px;
+  padding-right: 40px;
+  padding-left: 40px;
+}*/
+
+.Turn {
+  display: flex;
+  font-size: 0.8em;
+  
+  width: 200px;
+  text-align: center;
+  background-color: #D6D1C8;
+}
+
+.Turn > .Name {
+  width: 180px;
+  padding: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.Turn > .Score {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  width: 45px;
+  background-color: #C2BCAD;
+} 
+
+.Turn.MyTurn {
+  background-color: #9CCD9C;
+}
+
+.Turn.MyTurn > .Score {
+  background-color: #31AB59;
+}
+
+.Turn.Finished {
+  background-color: #C6C6C6;
+}
+
+.Turn.Finished > .Score {
+  background-color: grey;
+}
+
+
+.Turn.Winner {
+  background-color: #FF9918;
+}
+
+.Turn.Winner > .Score {
+  background-color: #A86216;
+}
+
+.Me {
+  font-weight: bold;
+}
+
+
+.Game .Button {
+  display: block;
+  width: 140px;
+  margin-top: 0.5em;
+  margin-left: auto;
+  margin-right: auto;
+}

@@ -1,0 +1,67 @@
+.Home{
+	display: flex;
+	flex-flow: column;
+}
+
+.Header {
+	width: 100%;
+	background-color: #E63328;
+	padding-top: 2vh;
+	padding-bottom: 2vh;
+}
+
+
+.Home > .Header > .User {
+  display: flex;
+	position: absolute;
+	right: 0;
+	top: 0;
+	padding:2em;
+	color: #E9E4D1;
+}
+
+.Home > .Header > .User button {
+  font-size: 20px;
+  color: #E9E4D1;
+  background: none;
+  border: none;
+}
+
+.Home > .Header > .User button:hover {
+  color: #F7B8A2;
+}
+
+.Header img {
+	display: block;
+	height: 40vh;
+	width: auto;
+	margin: auto;
+}
+
+
+.Home > .Body {
+	padding: 10vw;
+	padding-top: 2em;
+}
+
+.Home > .Body h1 {
+	font-family: Monteka;
+	color: #E63328;
+}
+
+
+.EditModal input {
+  border: 2px solid #E9E4D1;
+  margin-bottom: 1em;
+  color: #E9E4D1; 
+}
+
+
+.Games {
+	display: flex;
+	flex-flow: row wrap;
+}
+
+.LoadingModal {
+	outline: 0;
+}

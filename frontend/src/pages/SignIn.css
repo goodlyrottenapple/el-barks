@@ -1,0 +1,45 @@
+.SignIn {
+	display: flex;
+	flex-flow: column;
+}
+
+.SignIn > .Body {
+	padding: 10vw;
+}
+
+
+.Login input, .EditModal input {
+  background-image:none;
+  background-color:transparent;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  outline: none !important; 
+  -webkit-appearance: none; 
+  -moz-appearance: none;
+
+  font-size: 30px;
+  width: 100%;
+}
+
+.Login input {
+  border: 2px solid #E63328;
+}
+
+.Login button {
+  display: block;
+  margin-top: 1em;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: Monteka;
+  font-size: 30px;
+  color: #E63328;
+  background: none;
+  border: 2px solid #E63328;
+}
+
+.Login button:hover {
+  background: #F7B8A2;
+}
+
+
