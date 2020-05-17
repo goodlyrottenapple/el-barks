@@ -3,6 +3,8 @@ import ReactModal from 'react-modal';
 import Loader from 'react-loader-spinner';
 import { Link } from "react-router-dom";
 
+import * as PTrie from 'dawg-lookup/lib/ptrie';
+
 import Board, { Piece, PieceTray } from '../components/Board';
 import { letterValueMap } from '../helpers/LetterValues';
 import { calculateScore, topUpLetters, getAllWords, checkIfAllConnected } from '../helpers/Game';
@@ -20,7 +22,7 @@ export default function Game(props:any) {
   const [gameState, setGameState] = useState<[Piece[], PieceTray[]]>([[],[]]);
   const board = gameState[0];
 
-  const [dictionary,setDictionary] = useState<Set<string>>(new Set([]));
+  const [dictionary,setDictionary] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [playerID, setPlayerID] = useState(-1);
@@ -42,11 +44,8 @@ export default function Game(props:any) {
   useEffect(()=>{
     const dict = require('../assets/dictionary.txt');
     fetch(dict)
-    .then((r) => r.text())
-    .then(text  => {
-      const dict = text.split("\r\n");
-      setDictionary(new Set(dict));
-    })  
+    .then(r => r.text())
+    .then(text => setDictionary(new PTrie.PTrie(text)))  
   }, []);
 
 
@@ -145,7 +144,7 @@ export default function Game(props:any) {
   const updateBoard = (updatedBoard:any[], newScore:number) => {
     const updates:any = {};
     updates[`game/${gameID}/public/board`] = updatedBoard;
-    updates[`game/${gameID}/public/players/${playerID}/score`] = publicPlayers[playerID].score + newScore;
+    updates[`game/${gameID}/public/players/${playerID}/score`] = publicPlayers[playerID].score + newScore + (gameState[1].length === 0 ? 50 : 0);
     const[newBag, newLetters] = topUpLetters(scrabbleBag, gameState[1])
     console.log("new letters:", newLetters);
     updates[`game/${gameID}/scrabbleBag`] = newBag.length !== 0 ? newBag : null
@@ -209,7 +208,7 @@ export default function Game(props:any) {
         }
         return s.concat(l.letter.toLowerCase());
       }, '');
-      if (!dictionary.has(word)){
+      if (!dictionary.isWord(word)){
         throw `The word '${word.toUpperCase()}' is not valid.`;
       }
     });

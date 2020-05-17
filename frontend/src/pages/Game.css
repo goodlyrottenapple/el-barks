@@ -62,6 +62,10 @@
   .Board {
     margin-top: -1.3em;
   }
+
+  .Board.Preview {
+    margin-top: 0;
+  }
 }
 
 

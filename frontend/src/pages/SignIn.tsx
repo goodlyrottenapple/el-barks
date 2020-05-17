@@ -19,14 +19,27 @@ export default function SignIn(props: any) {
 
 
   useEffect(() => {
-    if (auth().isSignInWithEmailLink(window.location.href)) {
+    console.log(props.userEmail, props.match.params.email, props.userEmail === props.match.params.email, props.match.params.id)
+
+    if(props.userEmail) {
+      console.log("am here...")
+      if(props.match.params.email && 
+        !(props.match.params.id === '-1' || props.match.params.id.startsWith('-1?')) &&
+        props.match.params.email === props.userEmail) {
+        console.log("going to game...")
+        setRedirect(`/game/${props.match.params.id}`)
+      }
+      else setRedirect('/');
+      // else setRedirect(`/game/${props.match.params.id}`)
+
+    } else if(auth().isSignInWithEmailLink(window.location.href)) {
       const email = props.match.params.email;
       // The client SDK will parse the code from the link for you.
       auth().signInWithEmailLink(email, window.location.href)
         .then(function(result) {
           console.log("result:", result)
           if(result && result.user) props.setUid(result.user.uid);
-          if(props.match.id.startsWith('-1')) setRedirect('/');
+          if(props.match.params.id === '-1' || props.match.params.id.startsWith('-1?')) setRedirect('/');
           else setRedirect(`/game/${props.match.params.id}`)
         })
         .catch(function(error) {

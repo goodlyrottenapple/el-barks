@@ -55,9 +55,8 @@ function App() {
           ? <Game uid={uid} user={userNick} {...props} />
           : <Redirect to={{ pathname: `/signIn/${props.match.params.id}`, state: { from: props.location } }} />}>
           </Route>
-        <Route path="/signIn/:email/:id" render={(props) => <SignIn setUid={setUid} {...props}/>}></Route>
-        <Route path="/signIn/:id" render={(props) => <SignIn setUid={setUid} {...props}/>}></Route>
-        <Route path="/signIn" render={(props) => <SignIn setUid={setUid} {...props}/>}></Route>
+        <Route path="/signIn/:email/:id" render={(props) => <SignIn userEmail={userEmail} setUid={setUid} {...props}/>}></Route>
+        <Route path="/signIn" render={(props) => <SignIn userEmail={userEmail} setUid={setUid} {...props}/>}></Route>
       </Switch>
     </Router>
 }

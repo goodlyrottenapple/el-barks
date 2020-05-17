@@ -1,0 +1,1 @@
+declare module 'dawg-lookup/lib/ptrie';

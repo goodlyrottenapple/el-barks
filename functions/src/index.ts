@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { shuffle } from './utils'
 import { scrabbleBag } from './const'
+import { playHtmlTemplate, loginHtmlTemplate } from './email'
 
 
 // // Start writing Firebase Functions
@@ -18,11 +19,41 @@ const APP_NAME = 'el!barks';
 // Sends a login email to the given user.
 async function sendLoginEmail(email:string, link:string) {
   const mailOptions = {
-    from: `${APP_NAME} <noreply@el-barks.com>`,
+    from: `${APP_NAME} <el.barks.game@gmail.com>`,
     to: email,
     subject: `Welcome to ${APP_NAME}!`,
-    text: `Welcome to ${APP_NAME}. Log in in via: ${link}`,
-    html: `Welcome to ${APP_NAME}. Log in <a href="${link}">here</a>`
+    text: `Welcome to el!barks, the popular word game with friends that rhymes with dabble. To log in, follow this link: ${link}`,
+    html: loginHtmlTemplate(link)
+  };
+
+  if(!mailTransport){
+  	const nodemailer = require('nodemailer');
+  	const gmailEmail = functions.config().gmail.email;
+		const gmailPassword = functions.config().gmail.password;
+
+		mailTransport = nodemailer.createTransport({
+		  service: 'gmail',
+		  auth: {
+		    user: gmailEmail,
+		    pass: gmailPassword,
+		  },
+		});
+  }
+
+  await mailTransport.sendMail(mailOptions);
+  console.log('New welcome email sent to:', email);
+  return true;
+}
+
+
+// Sends a login email to the given user.
+async function sendGameInviteEmail(inviterEmail:string, email:string, link:string) {
+  const mailOptions = {
+    from: `${APP_NAME} <el.barks.game@gmail.com>`,
+    to: email,
+    subject: `Join a game on ${APP_NAME}!`,
+    text: `Hey! '${inviterEmail}' wants to play a popular word game with friends, which rhymes with dabble, with you. Go to '${link}' to play.`,
+    html: playHtmlTemplate(inviterEmail, link)
   };
 
   if(!mailTransport){
@@ -108,7 +139,7 @@ exports.createGame = functions.https.onCall((data:any, context:any) => {
 
 			let userEmailsOrIds = [{
 				exists:true, 
-				game_admin: true, 
+				// game_admin: true, 
 				uid:userData.uid, email: userData.email
 			}, ...res.filter((u:any) => !u.uid || (u.uid && u.uid !== userData.uid))]
 
@@ -156,9 +187,16 @@ exports.createGame = functions.https.onCall((data:any, context:any) => {
 							admin.database().ref(`userGames/${u.uid}/${gameID}`)
 								.set(userGamesData)
 								.catch(error2 => console.log("Setting userGames failed: " + error2))
-							// if(!is_initiator) sendinviteEmail(u.email, link);
 
 						} else {
+				      crypto = crypto || require('crypto');
+							const hashEmail = crypto.createHash('md5').update(u.email).digest("hex");
+				      admin.database().ref(`tempUserGames/${hashEmail}/${gameID}`)
+				      	.set(userGamesData)
+				      	.catch(error2 => console.log("Setting tempUserGames failed: " + error2))
+
+						}
+						if(u.email !== userData.email) {
 							const actionCodeSettings = {
 						    url: `${data.signup_url}/${u.email}/${gameID}`,
 						    handleCodeInApp: true
@@ -167,17 +205,9 @@ exports.createGame = functions.https.onCall((data:any, context:any) => {
 					  	admin.auth().generateSignInWithEmailLink(u.email, actionCodeSettings)
 					  		.then(link => {
 						      console.log("signup link", link);
-						      crypto = crypto || require('crypto');
-
-						      const hashEmail = crypto.createHash('md5').update(u.email).digest("hex");
-
-						      admin.database().ref(`tempUserGames/${hashEmail}/${gameID}`)
-						      	.set(userGamesData)
-						      	.catch(error2 => console.log("Setting tempUserGames failed: " + error2))
-
-						  		sendLoginEmail(u.email, link).then().catch(e => console.log(e));
+						  		sendGameInviteEmail((userData.email as string), u.email, link).catch(e => console.log(e));
 						  	})
-						  	.catch(e => console.log(e))
+						  	.catch(e => console.log("couldn't send email", e))
 						}
 					})
 				}

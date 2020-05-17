@@ -7,7 +7,7 @@ import { SizeMe } from 'react-sizeme';
 import './Board.css';
 import { letterValueMap } from '../helpers/LetterValues';
 import { useWindowDimensions } from '../helpers/WindowDimensions';
-import { isLetter } from '../helpers/Game';
+import { isLetter, getNextEmptySpaceInTray } from '../helpers/Game';
 import Piece from './Piece'
 
 export interface Piece {
@@ -74,6 +74,16 @@ export default function Board(props:BoardProps) {
 
     const boardAndTraySet = new Set(boardAndTray.map(e => e.i))
 
+    const fixedLayout = [...newLayout]
+
+    for (const i in fixedLayout) {
+      if(fixedLayout[i].y > 17) {
+        fixedLayout[i].x = getNextEmptySpaceInTray(fixedLayout.filter(e => e.y === 17))
+        fixedLayout[i].y = 17
+      }
+    }
+
+
     const newBoard = newLayout.filter((e:any) => boardAndTraySet.has(e.i) && e.y < 17).map((p:any) => {
       const n = boardAndTray.find((e:any) => e.i === p.i);
       return {...n, x: p.x, y: p.y}
@@ -83,6 +93,8 @@ export default function Board(props:BoardProps) {
       const n = boardAndTray.find((e:any) => e.i === p.i);
       return {...n, x: p.x}
     })
+
+   
 
     props.setGameState([newBoard, newLetters]);
   }
@@ -111,13 +123,7 @@ export default function Board(props:BoardProps) {
 
   const mkPieces = (board:any) => {
     return board.map((e:any) => 
-      <Piece key={e.i} letterValue={letterValueMap[e.letter]} saveBlankLetter={saveBlankLetter(e.i)} {...e} />
-      // <div className={`Piece${e.static ? '' : ' Movable'}${e.blank ? ' Blank' : ''}`} key={e.i}>
-      //   {mkLetter(e)}
-      //   {!e.blank && <svg style={{width:'100%', position:'fixed', bottom:'0px', left:'0px'}} width="100%" height="100%" viewBox={`${letterValueMap[e.letter] < 10 ? -700 : -590} -500 1000 300`}>
-      //     <text className="Piece Number" font-size="280" fill="black">{letterValueMap[e.letter]}</text>
-      //   </svg>}
-      // </div>
+      <Piece key={e.i} letterValue={letterValueMap[e.letter]} saveBlankLetter={saveBlankLetter(e.i)} {...e}/>
     );
   }
 
@@ -142,13 +148,11 @@ export default function Board(props:BoardProps) {
       margin={[0,0]}
       maxRows={18}
       onLayoutChange={unMkLayout(props.gameState)}
-
       onDragStart={(layout, oldItem, newItem, placeholder, e, element) => {
         const e_input = document.getElementById(`${newItem.i}-input`);
         if(e_input) e_input.focus();
       }}
       compactType={null}
-      preventCollision
       isResizable={false}
     >
       <div key="empty-top"></div>

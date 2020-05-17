@@ -16,13 +16,11 @@ export default function Piece(props:any) {
 
 
   useEffect(() => {
-    if(props.static) {
-      const timeoutId = setTimeout(
-        () => setShouldAnimate(false), 
-        500
-      );
-      return () => clearTimeout(timeoutId);
-    }
+    const timeoutId = setTimeout(
+      () => setShouldAnimate(false), 
+      500
+    );
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const mkLetter = () => {

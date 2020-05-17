@@ -8,6 +8,9 @@
   /*margin-bottom: 2em;*/
 }
 
+.blank {
+  background-color: red;
+}
 
 .Board.Preview {
   background: url(../assets/board_preview.svg) no-repeat center;
