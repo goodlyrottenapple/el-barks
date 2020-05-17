@@ -19,10 +19,7 @@ export default function SignIn(props: any) {
 
 
   useEffect(() => {
-    console.log(props.userEmail, props.match.params.email, props.userEmail === props.match.params.email, props.match.params.id)
-
     if(props.userEmail) {
-      console.log("am here...")
       if(props.match.params.email && 
         !(props.match.params.id === '-1' || props.match.params.id.startsWith('-1?')) &&
         props.match.params.email === props.userEmail) {
@@ -30,7 +27,6 @@ export default function SignIn(props: any) {
         setRedirect(`/game/${props.match.params.id}`)
       }
       else setRedirect('/');
-      // else setRedirect(`/game/${props.match.params.id}`)
 
     } else if(auth().isSignInWithEmailLink(window.location.href)) {
       const email = props.match.params.email;
@@ -43,7 +39,7 @@ export default function SignIn(props: any) {
           else setRedirect(`/game/${props.match.params.id}`)
         })
         .catch(function(error) {
-          console.log(error);
+          console.error(error);
           setRedirect('/');
         });
     } else {
@@ -54,7 +50,6 @@ export default function SignIn(props: any) {
 
   return redirect ? 
     <Redirect to={redirect} /> :
-    // <div>{JSON.stringify(props.match.params)}</div>
     (loading ? 
     <div>
       <div className="Loader"><Loader
@@ -92,7 +87,7 @@ export default function SignIn(props: any) {
               sendSignInLinkToEmail(payload).then(res => {
                 console.log("email sent...response:", res);
               }).catch(error => {
-                console.log(error);
+                console.error(error);
               })
               setEmailSent(true);
             } else {

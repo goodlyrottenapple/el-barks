@@ -4,7 +4,7 @@ import { Piece } from '../components/Board';
 
 export const calculateScore = (words: Array<any[]>) => {
   return words.reduce((wAcc, w) => {
-    var wMod = 1;
+    let wMod = 1;
     const wScore = w.reduce((lAcc, l) => {
       const baseScore = l.blank ? 2 : letterValueMap[l.letter];
       if(!l.static) {
@@ -45,7 +45,7 @@ export const getNextEmptySpaceInTray = (tray:any[]) => {
 
 export const getAllWords = (board: Piece[]) => {
   if(board.filter(e => e.y < 17).length === 1) return [[board.filter(e => e.y < 17)], []];
-  var rowWords:any = [], colWords:any = [];
+  let rowWords:any = [], colWords:any = [];
   for(let y = 1; y < 16; y++) {
     const fullRow = board.filter(e => e.y === y).sort((a, b) => a.x - b.x);
 
@@ -95,16 +95,16 @@ export const getAllWords = (board: Piece[]) => {
 }
 
 export const checkIfAllConnected = (words: Array<Piece[]>) => {
-  var wordSets : Array<Set<string>> = words.map((w:any) => new Set(w.map((l:any) => `${l.x}-${l.y}`)));
-  var dirty = true;
+  let wordSets : Array<Set<string>> = words.map((w:any) => new Set(w.map((l:any) => `${l.x}-${l.y}`)));
+  let dirty = true;
   if(wordSets.length < 2) {
     return true;
   }
   while(dirty) {
     dirty = false;
-    var current = new Set(wordSets[0]);
+    let current = new Set(wordSets[0]);
     // console.log("current in this round", current);
-    var newSets = [];
+    let newSets = [];
     for(let i = 1; i < wordSets.length; i++) {
       if(Array.from(wordSets[i]).filter(x => current.has(x)).length > 0){
         console.log("found intersection of", current, wordSets[i]);

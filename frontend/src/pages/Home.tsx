@@ -4,10 +4,8 @@ import ReactModal from 'react-modal';
 import Loader from 'react-loader-spinner';
 import CreatableSelect from 'react-select/creatable';
 
-import { RiEditLine } from 'react-icons/ri';
-
 import GameInfoCard from '../components/GameInfoCard';
-import { auth, db, functions } from "../helpers/Firebase"
+import { db, functions } from "../helpers/Firebase"
 import './Home.css'
 
 
@@ -32,10 +30,8 @@ const customStyles = {
 }
 
 export default function Home(props: any) {
-  const [nick, setNick] = useState(props.user ? props.user : '');
   const [friends, setFriends] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string|null>(null);
-  const [editModalOpen, setEditModalOpen] = useState(false);
   const [newGameModal, setNewGameModal] = useState(false);
   const [games, setGames] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -57,10 +53,10 @@ export default function Home(props: any) {
       });
       return () => (unsubscribe as any)();
     } catch (error) {
-      setError(error.message);
+      console.error(error.message);
     }
 
-  }, []);
+  }, [props.uid]);
 
 
   useEffect(() => {
@@ -75,7 +71,7 @@ export default function Home(props: any) {
       });
       return () => (unsubscribe as any)();
     } catch (error) {
-      setError(error.message);
+      console.error(error.message);
     }
 
   }, []);
@@ -153,6 +149,11 @@ export default function Home(props: any) {
         <button className="Button White" style={{marginRight:'5px'}} onClick={() => {
           setNewGameModal(false)
 
+          if(invited.length > 3) {
+            setError(`You can only invite 3 other players to this game.`);
+            return;
+          }
+
           const newFriends = Array.from(friends)
           for(const e of invited){
             if(!EmailValidator.validate(e)) {
@@ -179,7 +180,7 @@ export default function Home(props: any) {
             // Read result of the Cloud Function.
             console.log("added: ", res);
             setGames([...games, res])
-          }).catch(error => console.log(error))
+          }).catch(error => console.error(error))
         }}>Invite</button>
         <button className="Button White" onClick={() => setNewGameModal(false)}>Cancel</button>
       </ReactModal>

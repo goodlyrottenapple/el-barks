@@ -4,7 +4,6 @@ import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
 import './Board.css';
-import { letterValueMap } from '../helpers/LetterValues';
 
 
 export default function BoardPreview (props:any) {

@@ -32,10 +32,10 @@ export default function GameInfoCard(props: any) {
       });
       return (unsubscribe as any);
     } catch (error) {
-      console.log(error.message);
+      console.error(error.message);
     }
 
-  }, []);
+  }, [props.gameID]);
 
   const cancelGameFn = functions().httpsCallable('cancelGame');
 
@@ -84,7 +84,7 @@ export default function GameInfoCard(props: any) {
           // props.setLoading(true);
           props.removeGame()
           cancelGameFn({gameID: props.gameID})
-            .catch(error => console.log(error))
+            .catch(error => console.error(error))
         }}>Yes, cancel</button><button className="Button WhiteRed" onClick={e => {e.stopPropagation(); setCancelGame(false)}}>No, keep playing</button>
       </ReactModal>
       </div>

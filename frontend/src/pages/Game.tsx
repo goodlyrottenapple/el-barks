@@ -6,11 +6,10 @@ import { Link } from "react-router-dom";
 import * as PTrie from 'dawg-lookup/lib/ptrie';
 
 import Board, { Piece, PieceTray } from '../components/Board';
-import { letterValueMap } from '../helpers/LetterValues';
 import { calculateScore, topUpLetters, getAllWords, checkIfAllConnected } from '../helpers/Game';
 import './Game.css';
 
-import { db, functions } from "../helpers/Firebase"
+import { db } from "../helpers/Firebase"
 
 
 export default function Game(props:any) {
@@ -87,7 +86,7 @@ export default function Game(props:any) {
         });
         return () => (unsubscribe as any)();
       } catch (error) {
-        setError(error.message);
+        console.error(error);
       }
     }
   }, [playerID]);
@@ -107,7 +106,7 @@ export default function Game(props:any) {
       });
       return () => (unsubscribe as any)();
     } catch (error) {
-      setError(error.message);
+      console.error(error);
     }
   }, []);
 
@@ -126,7 +125,7 @@ export default function Game(props:any) {
         });
         return () => (unsubscribe as any)();
       } catch (error) {
-        setError(error.message);
+        console.error(error);
       }
     }
   }, [playerID]);
@@ -144,34 +143,48 @@ export default function Game(props:any) {
   const updateBoard = (updatedBoard:any[], newScore:number) => {
     const updates:any = {};
     updates[`game/${gameID}/public/board`] = updatedBoard;
-    updates[`game/${gameID}/public/players/${playerID}/score`] = publicPlayers[playerID].score + newScore + (gameState[1].length === 0 ? 50 : 0);
     const[newBag, newLetters] = topUpLetters(scrabbleBag, gameState[1])
     console.log("new letters:", newLetters);
     updates[`game/${gameID}/scrabbleBag`] = newBag.length !== 0 ? newBag : null
 
     updates[`game/${gameID}/private/${playerID}/letters`] = newLetters
+    updates[`game/${gameID}/public/players/${playerID}/potentialEndGameBonus`] = calculateScore([newLetters])
     if(newLetters.length === 0) {
-      console.log("player cannot make more moves...")
+      console.log("player finished the game...")
       updates[`game/${gameID}/public/players/${playerID}/status`] = "finished";
-      updates[`game/${gameID}/public/userTurn`] = getNextTurn(userTurn, publicPlayers.map((p, i) => i === playerID ? {...p, status: "finished"} : p));
+
+      console.log("player id", playerID)
+      let endGameBonus = 0;
+
+      publicPlayers.forEach((p,i) => {
+        if(i !== playerID) endGameBonus += p.potentialEndGameBonus
+      })
+      console.log("end game bonus...", endGameBonus)
+
+      updates[`game/${gameID}/public/players/${playerID}/score`] = 
+        publicPlayers[playerID].score + 
+        newScore + 
+        endGameBonus;
+      updates[`game/${gameID}/public/userTurn`] = -1;
     } else {
       updates[`game/${gameID}/public/userTurn`] = getNextTurn(userTurn, publicPlayers);
+      updates[`game/${gameID}/public/players/${playerID}/score`] = publicPlayers[playerID].score + newScore;
     }
-    db.ref().update(updates).catch(e => console.log("error on update", e))
+    db.ref().update(updates).catch(e => console.error("error on update", e))
   }
   const validateBoard = (oldBoard: Piece[], newBoard: Piece[]) => {
     setLoading(true);
-    if(!isMyTurn)throw "It's not currently your turn. Wait for your opponents to play."
+    if(!isMyTurn) throw new Error("It's not currently your turn. Wait for your opponents to play.")
     console.log("validating", newBoard)
     const oldBoardOnTheBoard = oldBoard;
     const movableOnTheBoard = newBoard.filter(e => !e.static);
     
     if (movableOnTheBoard.length === 0) {
-      throw "You haven't placed any new tiles on the board."
+      throw new Error("You haven't placed any new tiles on the board.")
     }
 
     if (oldBoardOnTheBoard.length === 0 && !movableOnTheBoard.find(e => e.x === 8 && e.y === 8)) {
-      throw "Your starting word must be placed over the star."
+      throw new Error ("Your starting word must be placed over the star.")
     }
     var horizontalWord = true, verticalWord = true;
     var x = movableOnTheBoard[0].x, y = movableOnTheBoard[0].y;
@@ -184,7 +197,7 @@ export default function Game(props:any) {
           horizontalWord = false;
         }
       }
-      if(!horizontalWord && !verticalWord) throw "This is not a valid move. Place tiles in a row or a column."
+      if(!horizontalWord && !verticalWord) throw new Error("This is not a valid move. Place tiles in a row or a column.")
     }
 
 
@@ -196,24 +209,32 @@ export default function Game(props:any) {
     console.log("lettersFromAllWords", lettersFromAllWords, newBoard.filter(e => e.y < 17))
 
     if(!newBoard.filter(e => e.y < 17).reduce((b, l) => b && lettersFromAllWords.has(`${l.x}-${l.y}`), true)) {
-      throw "This is not a contiguous word."
+      throw new Error("This is not a contiguous word.")
     }
-    if(!checkIfAllConnected(allWords)) throw "This word is not connected to any previously played words."
+    if(!checkIfAllConnected(allWords)) throw new Error("This word is not connected to any previously played words.")
 
     const allNewWords = allWords.filter(w => w.some((l:Piece) => !l.static))
     allNewWords.forEach(w => {
       const word = w.reduce((s:string,l:Piece) => {
         if(l.letter === ''){
-          throw "Please fill in the letter in the blank piece.";
+          throw new Error("Please fill in the letter in the blank piece.")
         }
         return s.concat(l.letter.toLowerCase());
       }, '');
       if (!dictionary.isWord(word)){
-        throw `The word '${word.toUpperCase()}' is not valid.`;
+        throw new Error(`The word '${word.toUpperCase()}' is not valid.`)
       }
     });
 
-    const score = calculateScore(allNewWords);
+
+
+
+    let score = calculateScore(allNewWords);
+    const numberOfTilesPlayed = newBoard.filter(l => l.y < 17 && !l.static).length
+    if(numberOfTilesPlayed === 7) {
+      console.log("score bonus!");
+      score += 50;
+    }
 
     console.log("score", score);
 
@@ -227,18 +248,12 @@ export default function Game(props:any) {
     console.log("is winner...", publicPlayers);
     let winnerID
     let maxScore = -1
-    let notAllPlayersAreFinished = false;
     publicPlayers.forEach((p:any,i:number) => {
-      if(p.status === "playing" || p.status === "pending") {
-        console.log("someone is still playing...")
-        notAllPlayersAreFinished = true;
-      }
       if(p.score > maxScore){
         maxScore = p.score
         winnerID = i
       }
     })
-    if(notAllPlayersAreFinished) return false;
     if(winnerID === playerID) return true;
     return false
   }
@@ -247,6 +262,14 @@ export default function Game(props:any) {
     if(publicPlayers[playerID].status !== "winner"){
       publicPlayers[playerID].status = "winner"
       db.ref().update({[`game/${gameID}/public/players/${playerID}/status`]: "winner"})
+    }
+    return true
+  }
+
+  const setFinished = () => {
+    if(publicPlayers[playerID].status !== "finished"){
+      publicPlayers[playerID].status = "finished"
+      db.ref().update({[`game/${gameID}/public/players/${playerID}/status`]: "finished"})
     }
     return true
   }
@@ -262,11 +285,11 @@ export default function Game(props:any) {
             validateBoard(prevBoard, board)
           } catch(e) {
             setLoading(false);
-            setError(e);
+            setError(e.message);
           }
         }}>Play</button>
 
-        <button className="Button" onClick={() => setEndGameModal(true)}>End</button>
+        <button className="Button" onClick={() => setEndGameModal(true)}>Skip</button>
       </div>
 
       <div className="Scores">
@@ -291,7 +314,7 @@ export default function Game(props:any) {
       <p>Congratulations on winning this game.</p>
     </ReactModal>
 
-    <ReactModal className="EndModal" appElement={document.getElementById('root') as HTMLElement} isOpen={playerID !== -1 && userTurn === -1 && publicPlayers.length > playerID && !isWinner()}>
+    <ReactModal className="EndModal" appElement={document.getElementById('root') as HTMLElement} isOpen={playerID !== -1 && userTurn === -1 && publicPlayers.length > playerID && !isWinner() && setFinished()}>
       <h1>Oh well...</h1>
       <p>You'll get them next time!</p>
     </ReactModal>
@@ -314,17 +337,17 @@ export default function Game(props:any) {
     </ReactModal>
 
     <ReactModal className="EndModal" appElement={document.getElementById('root') as HTMLElement} isOpen={endGameModal}>
-        <h1>End game...</h1>
-        <p>Are you sure you want to end this game?</p>
+        <h1>Skip round...</h1>
+        <p>Are you sure you want to skip this round?</p>
         <button className="Button WhiteBlack" style={{marginRight:'5px'}} onClick={e => {
           setEndGameModal(false);
           db.ref().update({
-            [`game/${gameID}/public/players/${playerID}/status`]: "finished",
-            [`game/${gameID}/public/players/${playerID}/score`]: publicPlayers[playerID].score - calculateScore([gameState[1]]),
-            [`game/${gameID}/public/userTurn`]: getNextTurn(userTurn, publicPlayers.map((p, i) => i === playerID ? {...p, status: "finished"} : p))
+            // [`game/${gameID}/public/players/${playerID}/status`]: "finished",
+            // [`game/${gameID}/public/players/${playerID}/score`]: publicPlayers[playerID].score - calculateScore([gameState[1]]),
+            [`game/${gameID}/public/userTurn`]: getNextTurn(userTurn, publicPlayers)
           })
 
-        }}>Yes</button><button className="Button WhiteBlack" onClick={e => {setEndGameModal(false)}}>No, keep playing</button>
+        }}>Yes</button><button className="Button WhiteBlack" onClick={e => {setEndGameModal(false)}}>No, play this round</button>
       </ReactModal>
   </div>
   );
