@@ -29,11 +29,13 @@
     "react-scripts": "3.4.1",
     "react-select": "^3.1.0",
     "react-sizeme": "^2.6.12",
-    "typescript": "~3.7.2"
+    "typescript": "~3.7.2",
+    "use-sound": "^1.0.2"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-app-rewired build",
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -55,6 +57,7 @@
   "devDependencies": {
     "babel-plugin-transform-remove-console": "^6.9.4",
     "customize-cra": "^0.9.1",
-    "react-app-rewired": "^2.1.6"
+    "react-app-rewired": "^2.1.6",
+    "source-map-explorer": "^2.4.2"
   }
 }

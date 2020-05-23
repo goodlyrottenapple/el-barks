@@ -166,10 +166,12 @@ exports.createGame = functions.https.onCall((data:any, context:any) => {
 			  public: {
 			  	board: [],
 			  	userTurn: 0,
+			  	turnCounter: 0,
 			  	players: userEmailsOrIds.map((u:any) => { return {
 			  		email: u.email,
 			  		status: "pending",
 			  		score: 0,
+			  		potentialEndGameBonus: 0
 			  	}})
 			  },
 

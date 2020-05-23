@@ -27,14 +27,14 @@ export default function Piece(props:any) {
     if (props.blank) {
       if(props.static) {
         return <svg width="100%" height="100%" viewBox="-300 -350 1000 300">
-            <text font-size="600" fill="black">{props.letter}</text>
+            <text fontSize="600" fill="black">{props.letter}</text>
           </svg>
       } else {
         return <input id={`${props.i}-input`} type="text" value={props.letter} onChange={props.saveBlankLetter} />
       }
     } else {
       return <svg width="100%" height="100%" viewBox="-300 -350 1000 300">
-          <text font-size="600" fill="black">{props.letter}</text>
+          <text fontSize="600" fill="black">{props.letter}</text>
         </svg>
     }
   }
@@ -50,7 +50,7 @@ export default function Piece(props:any) {
     onTouchEnd={props.onTouchEnd}>
       {mkLetter()}
       {!props.blank && <svg style={{width:'100%', position:'fixed', bottom:'0px', left:'0px'}} width="100%" height="100%" viewBox={`${props.letterValue < 10 ? -700 : -590} -500 1000 300`}>
-        <text className="Piece Number" font-size="280" fill="black">{props.letterValue}</text>
+        <text className="Piece Number" fontSize="280" fill="black">{props.letterValue}</text>
       </svg>}
     </div>
 }

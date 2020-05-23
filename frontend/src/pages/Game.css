@@ -168,3 +168,21 @@
   margin-left: auto;
   margin-right: auto;
 }
+
+
+.Sound {
+  position: absolute;
+  top:5px;
+  right: 5px;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 30px;
+  z-index: 999;
+}
+
+.Sound.Mute {
+  top:7px;
+  right: 15px;
+  font-size: 26px;
+}

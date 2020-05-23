@@ -5,8 +5,7 @@
     "userGames": {
       "$uid": {
         ".read": "$uid === auth.uid",
-        ".write": "$uid === auth.uid",
-        
+        ".write": "$uid === auth.uid"
       }
     },
     "userFriends": {
@@ -19,21 +18,24 @@
       "$gameID": {
         "scrabbleBag": {
           ".read": "root.child('userGames/'+auth.uid+'/'+$gameID).exists()",
-          ".write": "root.child('userGames/'+auth.uid+'/'+$gameID).exists()",
+          ".write": "root.child('userGames/'+auth.uid+'/'+$gameID).exists()"
         },
         "public": {
           ".read": "root.child('userGames/'+auth.uid+'/'+$gameID).exists()",
-      		"players": {
+          "players": {
             "$i":{
               ".write": "data.child('email').val() === auth.token.email"
             }
           },
-            
           "board": {
             ".write" : "root.child('userGames/'+auth.uid+'/'+$gameID).exists()"
           },
           "userTurn": {
             ".write" : "root.child('userGames/'+auth.uid+'/'+$gameID).exists()"
+          },
+          "turnCounter": {
+            ".write" : "root.child('userGames/'+auth.uid+'/'+$gameID).exists()",
+            ".validate" : "(!data.exists() && newData.val() === 1) || newData.val() === data.val()+1"
           }
         },
         "private": {

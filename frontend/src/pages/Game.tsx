@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import ReactModal from 'react-modal';
 import Loader from 'react-loader-spinner';
 import { Link } from "react-router-dom";
+import useSound from 'use-sound';
+import { FaVolumeOff, FaVolumeUp } from 'react-icons/fa';
+import { useStickyState } from '../helpers/StickyState';
 
 import * as PTrie from 'dawg-lookup/lib/ptrie';
 
@@ -16,6 +19,7 @@ export default function Game(props:any) {
   const gameID = props.match.params.id;
   const [loading, setLoading] = useState(true);
   const [userTurn, setUserTurn] = useState(0);
+  const [turnCounter, setTurnCounter] = useState(0);
 
   const [prevBoard, setPrevBoard] = useState<Piece[]>([]);
   const [gameState, setGameState] = useState<[Piece[], PieceTray[]]>([[],[]]);
@@ -31,6 +35,10 @@ export default function Game(props:any) {
   const [scrabbleBag, setScrabbleBag] = useState([]);
   const [endGameModal, setEndGameModal] = useState(false);
 
+  const popMP3 = require('../assets/pop.mp3')
+  const [playPop] = useSound(popMP3);
+  const [volume, setVolume] = useStickyState(false, "volume")
+
   const setBoard = (b:Piece[]) => {
     setGameState(prevGameState => [b,prevGameState[1]])
     setPrevBoard(b);
@@ -44,7 +52,8 @@ export default function Game(props:any) {
     const dict = require('../assets/dictionary.txt');
     fetch(dict)
     .then(r => r.text())
-    .then(text => setDictionary(new PTrie.PTrie(text)))  
+    .then(text => setDictionary(new PTrie.PTrie(text)))
+    .catch(console.error)
   }, []);
 
 
@@ -54,7 +63,7 @@ export default function Game(props:any) {
         setPlayerID(snapshot.val())
       });
     } catch (error) {
-      setError(error.message);
+      console.error(error.message);
     }
   }, []);
 
@@ -71,7 +80,12 @@ export default function Game(props:any) {
             if(data && data.userTurn != null) {
               console.log("setting turn to ", data.userTurn === playerID, data.userTurn, playerID)
               setUserTurn(data.userTurn)
+              if(data.userTurn === playerID) {
+                console.log("my turn", volume)
+                if(volume) playPop();
+              }
             }
+            if(data && data.turnCounter != null) setTurnCounter(data.turnCounter)
             if(data && data.players) {
               setPublicPlayers(data.players)
 
@@ -79,9 +93,6 @@ export default function Game(props:any) {
                 db.ref().update({[`game/${gameID}/public/players/${playerID}/status`]: "playing"});
               }
             }
-
-
-
           }
         });
         return () => (unsubscribe as any)();
@@ -170,7 +181,14 @@ export default function Game(props:any) {
       updates[`game/${gameID}/public/userTurn`] = getNextTurn(userTurn, publicPlayers);
       updates[`game/${gameID}/public/players/${playerID}/score`] = publicPlayers[playerID].score + newScore;
     }
-    db.ref().update(updates).catch(e => console.error("error on update", e))
+
+    console.log("turnCounter:", turnCounter)
+    updates[`game/${gameID}/public/turnCounter`] = turnCounter+1;
+
+    db.ref().update(updates).catch(e => {
+      console.error("error on update", e)
+      setError("Oh dear... something fishy is going on... please refresh this page.")
+    })
   }
   const validateBoard = (oldBoard: Piece[], newBoard: Piece[]) => {
     setLoading(true);
@@ -276,6 +294,7 @@ export default function Game(props:any) {
 
   return (
     <div className="Game">
+      <button className={`Sound${volume ? '' : ' Mute'}`} onClick={() => setVolume(!volume)}>{volume ? <FaVolumeUp/> : <FaVolumeOff/>}</button>
       <div className="Sidebar" >
       <Link className="Logo" to="/"><img alt="" src={require('../assets/logo.svg')}/></Link>
 
@@ -344,9 +363,12 @@ export default function Game(props:any) {
           db.ref().update({
             // [`game/${gameID}/public/players/${playerID}/status`]: "finished",
             // [`game/${gameID}/public/players/${playerID}/score`]: publicPlayers[playerID].score - calculateScore([gameState[1]]),
-            [`game/${gameID}/public/userTurn`]: getNextTurn(userTurn, publicPlayers)
+            [`game/${gameID}/public/userTurn`]: getNextTurn(userTurn, publicPlayers),
+            [`game/${gameID}/public/turnCounter`]: turnCounter+1
+          }).catch(e => {
+            console.error("error on update", e)
+            setError("Oh dear... something fishy is going on... please refresh this page.")
           })
-
         }}>Yes</button><button className="Button WhiteBlack" onClick={e => {setEndGameModal(false)}}>No, play this round</button>
       </ReactModal>
   </div>
