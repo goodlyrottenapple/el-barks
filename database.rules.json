@@ -36,6 +36,9 @@
           "turnCounter": {
             ".write" : "root.child('userGames/'+auth.uid+'/'+$gameID).exists()",
             ".validate" : "(!data.exists() && newData.val() === 1) || newData.val() === data.val()+1"
+          },
+          "passCounter": {
+            ".write": "root.child('userGames/'+auth.uid+'/'+$gameID).exists()",
           }
         },
         "private": {

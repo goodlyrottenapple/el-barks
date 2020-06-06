@@ -10,17 +10,32 @@ import React, { useState, useEffect } from 'react';
 // }
 
 export default function Piece(props:any) {
-  const [ shouldAnimate, setShouldAnimate ] = useState(true);
-  const mountedStyle = {opacity: 1, transition: "opacity 500ms ease-in"};
-  const unmountedStyle = {opacity: 0, transition: "opacity 500ms ease-in"};
+  const [ shouldAnimate, setShouldAnimate ] = useState(2);
+  const mountedStyle = { opacity: 1, boxShadow: "inset 0px 0px 0px 0px rgba(16,173,229,1)", transition: "opacity 500ms ease-in, box-shadow 10s ease-in-out"};
+  const unmountedStyle = { opacity: 0, boxShadow: "inset 0px 0px 10px 5px rgba(16,173,229,1)", transition: "opacity 500ms ease-in"};
+  const glowingStyle = { 
+    opacity: 0, 
+    boxShadow: "inset 0px 0px 10px 5px rgba(16,173,229,1)", 
+    // transition: "box-shadow 0.5s ease-in-out" 
+  };
 
 
   useEffect(() => {
-    const timeoutId = setTimeout(
-      () => setShouldAnimate(false), 
-      500
+    let timeoutId2:any;
+    const timeoutId1 = setTimeout(
+      () => {
+        setShouldAnimate(1);
+        timeoutId2 = setTimeout(
+          () => setShouldAnimate(0),
+          2000
+        );
+      }, 
+      100
     );
-    return () => clearTimeout(timeoutId);
+    return () => { 
+      clearTimeout(timeoutId1);
+      clearTimeout(timeoutId2);
+    }
   }, []);
 
   const mkLetter = () => {
@@ -39,10 +54,18 @@ export default function Piece(props:any) {
     }
   }
 
+  const animStyle = (shouldAnim: number) => {
+    switch (shouldAnim) {
+      case 2: return unmountedStyle;
+      case 1: return glowingStyle;
+      case 0: return mountedStyle;
+    }
+  }
+
   return <div 
     key={props.key} 
     className={`Piece${props.static ? '' : ' Movable'}${props.blank ? ' Blank' : ''} `+ props.className} 
-    style={{...(props.static && shouldAnimate ? unmountedStyle : mountedStyle), ...props.style}}
+    style={{ ...(props.static && animStyle(shouldAnimate)), ...props.style, borderRadius: '5px'}}
     data-grid={props.grid}
     onMouseUp={props.onMouseUp}
     onMouseDown={props.onMouseDown}

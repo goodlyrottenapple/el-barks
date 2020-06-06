@@ -20,6 +20,7 @@ export default function Game(props:any) {
   const [loading, setLoading] = useState(true);
   const [userTurn, setUserTurn] = useState(0);
   const [turnCounter, setTurnCounter] = useState(0);
+  const [passCounter, setPassCounter] = useState(0);
 
   const [prevBoard, setPrevBoard] = useState<Piece[]>([]);
   const [gameState, setGameState] = useState<[Piece[], PieceTray[]]>([[],[]]);
@@ -85,7 +86,16 @@ export default function Game(props:any) {
                 if(volume) playPop();
               }
             }
+            if(data && data.userTurn != null) {
+              console.log("setting turn to ", data.userTurn === playerID, data.userTurn, playerID)
+              setUserTurn(data.userTurn)
+              if(data.userTurn === playerID) {
+                console.log("my turn", volume)
+                if(volume) playPop();
+              }
+            }
             if(data && data.turnCounter != null) setTurnCounter(data.turnCounter)
+            if(data && data.passCounter != null) setPassCounter(data.passCounter)
             if(data && data.players) {
               setPublicPlayers(data.players)
 
@@ -184,6 +194,7 @@ export default function Game(props:any) {
 
     console.log("turnCounter:", turnCounter)
     updates[`game/${gameID}/public/turnCounter`] = turnCounter+1;
+    updates[`game/${gameID}/public/passCounter`] = 0;
 
     db.ref().update(updates).catch(e => {
       console.error("error on update", e)
@@ -261,7 +272,7 @@ export default function Game(props:any) {
     updateBoard(updatedBoard, score)
   }
 
-
+  const gameIsFinished = userTurn === -1 || passCounter === publicPlayers.length
   const isWinner = () => {
     console.log("is winner...", publicPlayers);
     let winnerID
@@ -314,7 +325,7 @@ export default function Game(props:any) {
       <div className="Scores">
         <div className="Heading"><h2>Players</h2></div>
         {publicPlayers.map((p,i) => 
-          <div key={`player-${i}`} className={`Turn${i===userTurn ?' MyTurn':(userTurn === -1 && p.status === "winner" ? ' Winner':'')}${i===playerID ?' Me':''}`}>
+          <div key={`player-${i}`} className={`Turn${i === userTurn ? ' MyTurn' : (gameIsFinished && p.status === "winner" ? ' Winner':'')}${i===playerID ?' Me':''}`}>
             <div className="Name">{p.email}</div>
             <div className="Score">{p.score}</div>
           </div>)}
@@ -324,7 +335,7 @@ export default function Game(props:any) {
 
     <ReactModal className="WinModal" appElement={document.getElementById('root') as HTMLElement} isOpen={
       playerID !== -1 && 
-      userTurn === -1 && 
+      gameIsFinished && 
       publicPlayers.length > playerID && 
       isWinner() &&
       setWinner()
@@ -333,7 +344,7 @@ export default function Game(props:any) {
       <p>Congratulations on winning this game.</p>
     </ReactModal>
 
-    <ReactModal className="EndModal" appElement={document.getElementById('root') as HTMLElement} isOpen={playerID !== -1 && userTurn === -1 && publicPlayers.length > playerID && !isWinner() && setFinished()}>
+      <ReactModal className="EndModal" appElement={document.getElementById('root') as HTMLElement} isOpen={playerID !== -1 && gameIsFinished && publicPlayers.length > playerID && !isWinner() && setFinished()}>
       <h1>Oh well...</h1>
       <p>You'll get them next time!</p>
     </ReactModal>
@@ -364,7 +375,8 @@ export default function Game(props:any) {
             // [`game/${gameID}/public/players/${playerID}/status`]: "finished",
             // [`game/${gameID}/public/players/${playerID}/score`]: publicPlayers[playerID].score - calculateScore([gameState[1]]),
             [`game/${gameID}/public/userTurn`]: getNextTurn(userTurn, publicPlayers),
-            [`game/${gameID}/public/turnCounter`]: turnCounter+1
+            [`game/${gameID}/public/turnCounter`]: turnCounter+1,
+            [`game/${gameID}/public/passCounter`]: passCounter+1
           }).catch(e => {
             console.error("error on update", e)
             setError("Oh dear... something fishy is going on... please refresh this page.")
