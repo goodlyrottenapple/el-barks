@@ -25,7 +25,7 @@ export default function BoardPreview (props:any) {
     return board.map((e:any) => 
       <div className="Piece" key={`${props.gameID}-${e.i}`}>
         <svg width="100%" height="100%" viewBox="-300 -350 1000 300">
-          <text font-size="600" fill="black">{e.letter}</text>
+          <text fontSize="600" fill="black">{e.letter}</text>
         </svg>
       </div>);
   }
