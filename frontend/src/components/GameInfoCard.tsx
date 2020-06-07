@@ -70,7 +70,7 @@ export default function GameInfoCard(props: any) {
       <div className="GameInfo">
         <div className="CancelGame" onClick={e => {e.stopPropagation(); setCancelGame(true)}}><RiCloseLine/></div>
         <span className="Date">Started on {props.creation_date}</span>
-        <h4>Players</h4>
+        <h4 style={{marginBottom: '7px', marginTop:'5px'}}>Players</h4>
         <ul>{players.map((p:any, i) => 
           <li key={`li-${props.gameID}-${i}`}><div>{p.email}</div> {statusIcon(p.status)}</li>)}
         </ul>

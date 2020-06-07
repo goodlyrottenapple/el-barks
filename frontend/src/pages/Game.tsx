@@ -40,6 +40,12 @@ export default function Game(props:any) {
   const [playPop] = useSound(popMP3);
   const [volume, setVolume] = useStickyState(false, "volume")
 
+  
+
+  useEffect(() => {
+    if (volume && isMyTurn) playPop();
+  }, [volume, isMyTurn, playPop])
+
   const setBoard = (b:Piece[]) => {
     setGameState(prevGameState => [b,prevGameState[1]])
     setPrevBoard(b);
@@ -81,10 +87,6 @@ export default function Game(props:any) {
             if(data && data.userTurn != null) {
               console.log("setting turn to ", data.userTurn === playerID, data.userTurn, playerID)
               setUserTurn(data.userTurn)
-              if(data.userTurn === playerID) {
-                console.log("my turn", volume)
-                if(volume) playPop();
-              }
             }
             if(data && data.userTurn != null) {
               console.log("setting turn to ", data.userTurn === playerID, data.userTurn, playerID)

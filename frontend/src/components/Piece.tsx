@@ -10,17 +10,17 @@ import React, { useState, useEffect } from 'react';
 // }
 
 export default function Piece(props:any) {
-  const [ shouldAnimate, setShouldAnimate ] = useState(2);
+  const [shouldAnimate, setShouldAnimate] = useState(props.static ? 2 : 0);
   const mountedStyle = { opacity: 1, boxShadow: "inset 0px 0px 0px 0px rgba(16,173,229,1)", transition: "opacity 500ms ease-in, box-shadow 10s ease-in-out"};
   const unmountedStyle = { opacity: 0, boxShadow: "inset 0px 0px 10px 5px rgba(16,173,229,1)", transition: "opacity 500ms ease-in"};
   const glowingStyle = { 
     opacity: 0, 
     boxShadow: "inset 0px 0px 10px 5px rgba(16,173,229,1)", 
-    // transition: "box-shadow 0.5s ease-in-out" 
   };
 
 
   useEffect(() => {
+    if (!props.static) return;
     let timeoutId2:any;
     const timeoutId1 = setTimeout(
       () => {
