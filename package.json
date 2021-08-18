@@ -40,10 +40,7 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": "react-app",
-    "rules": {
-      "@typescript-eslint/no-unused-vars": "off"
-    }
+    "extends": "react-app"
   },
   "browserslist": {
     "production": [

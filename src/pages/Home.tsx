@@ -5,7 +5,6 @@ import Loader from 'react-loader-spinner';
 import CreatableSelect from 'react-select/creatable';
 
 import GameInfoCard from '../components/GameInfoCard';
-import { Session } from '@supabase/supabase-js';
 import { supabase } from '../helpers/SupabaseClient';
 import './Home.css'
 
