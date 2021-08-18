@@ -5,8 +5,11 @@ import Loader from 'react-loader-spinner';
 import CreatableSelect from 'react-select/creatable';
 
 import GameInfoCard from '../components/GameInfoCard';
-import { db, functions } from "../helpers/Firebase"
+import { Session } from '@supabase/supabase-js';
+import { supabase } from '../helpers/SupabaseClient';
 import './Home.css'
+
+
 
 
 const customStyles = {
@@ -33,51 +36,129 @@ export default function Home(props: any) {
   const [friends, setFriends] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string|null>(null);
   const [newGameModal, setNewGameModal] = useState(false);
-  const [games, setGames] = useState<any[]>([]);
+  const [games, setGames] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [invited, setInvited] = useState<string[]>([]);
 
 
   useEffect(() => {
-    try {
-      const unsubscribe = db.ref(`userGames/${props.uid}`).on("value", snapshot => {
-        setLoading(false)
-        if(snapshot) {
-          let newGames:any[] = [];
-          console.log("loading...")
-          snapshot.forEach((snap) => {
-            newGames.push({gameID:snap.key, ...snap.val()});
-          });
-          setGames(newGames);
-        }
-      });
-      return () => (unsubscribe as any)();
-    } catch (error) {
-      console.error(error.message);
-    }
+    getProfile();
+    getGames();
+  }, [props.session])
 
-  }, [props.uid]);
+  async function getProfile() {
+    try {
+      setLoading(true)
+      const user = supabase.auth.user()
+
+      let { data, error, status } = await supabase
+        .from('profiles')
+        .select(`friends`)
+        .eq('id', user?.id)
+        .single()
+
+      if (error && status !== 406) {
+        throw error
+      }
+
+      if (data) {
+        setFriends(new Set(data.friends))
+        // setGames(data.games)
+      }
+    } catch (error) {
+      alert(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+
+  async function getGames() {
+    try {
+      setLoading(true)
+      const user = supabase.auth.user()
+
+      let { data, error, status } = await supabase
+        .from('game')
+        .select(`id`)
+        .eq('player_id', user?.id)
+
+      if (error && status !== 406) {
+        throw error
+      }
+
+      if (data) {
+        console.log(data)
+        setGames(data.map(({id}) => id))
+      }
+    } catch (error) {
+      alert(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+
+
+
+  // useEffect(() => {
+  //   try {
+  //     const unsubscribe = db.ref(`userGames/${props.uid}`).on("value", snapshot => {
+  //       setLoading(false)
+  //       if(snapshot) {
+  //         let newGames:any[] = [];
+  //         console.log("loading...")
+  //         snapshot.forEach((snap) => {
+  //           newGames.push({gameID:snap.key, ...snap.val()});
+  //         });
+  //         setGames(newGames);
+  //       }
+  //     });
+  //     return () => (unsubscribe as any)();
+  //   } catch (error) {
+  //     console.error(error.message);
+  //   }
+
+  // }, [props.uid]);
 
 
   useEffect(() => {
-    try {
-      const unsubscribe = db.ref(`userFriends/${props.uid}`).on("value", snapshot => {
-        setLoading(false)
-        if(snapshot) {
-          const data = snapshot.val();
-          console.log("loading users...", data)
-          if(data) setFriends(new Set(data))
-        }
-      });
-      return () => (unsubscribe as any)();
-    } catch (error) {
-      console.error(error.message);
-    }
+    supabase
+      .from(`game:player_id=eq.${supabase.auth.user()?.id}`)
+      .on('*', _payload => {
+        // console.log('Change received!', payload)
+        getGames();
+      })
+      .subscribe()
 
   }, []);
 
 
-  const createGame = functions().httpsCallable('createGame');
+
+  async function updateFriends(newFriends: string[]) {
+    try {
+      setLoading(true)
+      const user = supabase.auth.user()
+
+      const updates = {
+        id: user?.id,
+        friends: newFriends,
+        updated_at: new Date(),
+      }
+
+      let { error } = await supabase.from('profiles').upsert(updates, {
+        returning: 'minimal', // Don't return the value after inserting
+      })
+
+      if (error) {
+        throw error
+      }
+    } catch (error) {
+      alert(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
 
   const handleGameInviteSelect  = (selectedOption:any) => {
@@ -95,10 +176,11 @@ export default function Home(props: any) {
 
         {games.map((e,i) => {
           console.log(e);
-          return <GameInfoCard key={e.gameID} removeGame={() => {
+          return <GameInfoCard key={e} gameId={e} removeGame={() => {
             console.log("deleting"); 
-            setGames(games.filter((_,j) => i !== j))
-            db.ref(`userGames/${props.uid}/${e.gameID}`).remove()
+            const newGames = games.filter((_,j) => i !== j);
+            setGames(newGames)
+            // updateGame(newGames);
           }} setLoading={setLoading} {...e}/>
         })}
 
@@ -146,7 +228,7 @@ export default function Home(props: any) {
 
         
         </div>
-        <button className="Button White" style={{marginRight:'5px'}} onClick={() => {
+        <button className="Button White" style={{marginRight:'5px'}} onClick={async () => {
           setNewGameModal(false)
 
           if(invited.length > 3) {
@@ -160,7 +242,7 @@ export default function Home(props: any) {
               setError(`'${e}' is not a valid email address.`);
               return;
             }
-            if(e === props.userEmail){
+            if(e === supabase.auth.user()?.email){
               setError(`You can't invite yourself to a game.`);
               return;
             }
@@ -171,16 +253,25 @@ export default function Home(props: any) {
 
           if(newFriends.length !== friends.size) {
             console.log("updating friends");
-            db.ref(`userFriends/${props.uid}`).set(newFriends)
+            updateFriends(Array.from(newFriends))
           }
           
           // setLoading(true);
           console.log("creating game...")
-          createGame({invited: invited, signup_url:`${process.env.REACT_APP_DOMAIN}/signIn`}).then(res => {
-            // Read result of the Cloud Function.
-            console.log("added: ", res);
-            setGames([...games, res])
-          }).catch(error => console.error(error))
+
+          const { data, error } = await supabase
+            .rpc('new_game', { originator: supabase.auth.user()?.email, players: invited })
+
+          if(error) setError(`${error}`)
+          // else {
+          //     supabase.auth.api.inviteUserByEmail("a@b.com", {redirectTo: "aaa" })
+          // }
+
+          // createGame({invited: invited, signup_url:`${process.env.REACT_APP_DOMAIN}/signIn`}).then(res => {
+          //   // Read result of the Cloud Function.
+          //   console.log("added: ", res);
+          //   setGames([...games, res])
+          // }).catch(error => console.error(error))
         }}>Invite</button>
         <button className="Button White" onClick={() => setNewGameModal(false)}>Cancel</button>
       </ReactModal>
