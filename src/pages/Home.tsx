@@ -259,7 +259,7 @@ export default function Home(props: any) {
           // setLoading(true);
           console.log("creating game...")
 
-          const { data, error } = await supabase
+          const { error } = await supabase
             .rpc('new_game', { originator: supabase.auth.user()?.email, players: invited })
 
           if(error) setError(`${error}`)

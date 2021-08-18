@@ -53,8 +53,6 @@ export default function GameInfoCard(props: any) {
 
   async function getPlayers(gameId: string) {
     try {
-      const user = supabase.auth.user()
-
       let { data, error, status } = await supabase
         .from('game_player_status_view')
         .select(`

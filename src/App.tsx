@@ -3,7 +3,7 @@ import {
   Route,
   BrowserRouter as Router,
   Switch,
-  Redirect,
+  // Redirect,
 } from "react-router-dom";
 
 import Loader from 'react-loader-spinner';

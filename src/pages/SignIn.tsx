@@ -1,5 +1,5 @@
-import React , { useState, useEffect } from 'react';
-import { Redirect } from 'react-router-dom';
+import React , { useState } from 'react';
+// import { Redirect } from 'react-router-dom';
 import ReactModal from 'react-modal';
 import * as EmailValidator from 'email-validator';
 import Loader from 'react-loader-spinner';
@@ -9,7 +9,7 @@ import './SignIn.css'
 
 
 export default function SignIn(props: any) {
-  const [redirect, setRedirect] = useState();
+  // const [redirect, setRedirect] = useState();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState<string | undefined>();
   const [emailSent, setEmailSent] = useState(false);
