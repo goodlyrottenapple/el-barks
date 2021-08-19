@@ -24,17 +24,15 @@ export default function GameInfoCard(props: any) {
       getGame(props.gameId)
       getPlayers(props.gameId)
     }
-  }, [props.gameId]);
+  }, [props.gameId, props.session]);
 
   async function getGame(gameId: string) {
     try {
-      const user = supabase.auth.user()
 
       let { data, error, status } = await supabase
-        .from('game')
+        .from('game_board')
         .select(`board, started_on`)
-        .eq('player_id', user?.id)
-        .eq('id', gameId)
+        .eq('game_id', gameId)
         .single()
 
       if (error && status !== 406) {
@@ -53,15 +51,10 @@ export default function GameInfoCard(props: any) {
 
   async function getPlayers(gameId: string) {
     try {
-      let { data, error, status } = await supabase
-        .from('game_player_status_view')
-        .select(`
-          email,
-          status
-        `)
-        .eq('game_id', gameId)
+      const { data,  error } = await supabase
+        .rpc('view_game_status', { game_id: gameId })
 
-      if (error && status !== 406) {
+      if (error) {
         throw error
       }
 

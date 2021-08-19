@@ -48,7 +48,7 @@ export default function Home(props: any) {
   async function getProfile() {
     try {
       setLoading(true)
-      const user = supabase.auth.user()
+      const user = props.session.user
 
       let { data, error, status } = await supabase
         .from('profiles')
@@ -75,11 +75,11 @@ export default function Home(props: any) {
   async function getGames() {
     try {
       setLoading(true)
-      const user = supabase.auth.user()
+      const user = props.session.user
 
       let { data, error, status } = await supabase
-        .from('game')
-        .select(`id`)
+        .from('game_participants')
+        .select(`game_id`)
         .eq('player_id', user?.id)
 
       if (error && status !== 406) {
@@ -88,7 +88,7 @@ export default function Home(props: any) {
 
       if (data) {
         console.log(data)
-        setGames(data.map(({id}) => id))
+        setGames(data.map(({game_id}) => game_id))
       }
     } catch (error) {
       alert(error.message)
@@ -123,7 +123,7 @@ export default function Home(props: any) {
 
   useEffect(() => {
     supabase
-      .from(`game:player_id=eq.${supabase.auth.user()?.id}`)
+      .from(`game_participants:player_id=eq.${props.session.user?.id}`)
       .on('*', _payload => {
         // console.log('Change received!', payload)
         getGames();
@@ -137,7 +137,7 @@ export default function Home(props: any) {
   async function updateFriends(newFriends: string[]) {
     try {
       setLoading(true)
-      const user = supabase.auth.user()
+      const user = props.session.user
 
       const updates = {
         id: user?.id,
@@ -175,7 +175,7 @@ export default function Home(props: any) {
 
         {games.map((e,i) => {
           console.log(e);
-          return <GameInfoCard key={e} gameId={e} removeGame={() => {
+          return <GameInfoCard key={e} session gameId={e} removeGame={() => {
             console.log("deleting"); 
             const newGames = games.filter((_,j) => i !== j);
             setGames(newGames)
@@ -183,7 +183,7 @@ export default function Home(props: any) {
           }} setLoading={setLoading} {...e}/>
         })}
 
-        <GameInfoCard newGame onClick={() => setNewGameModal(true)} />
+        <GameInfoCard newGame onClick={() => setNewGameModal(true)} session />
 
         </div>
       </div>
@@ -263,7 +263,7 @@ export default function Home(props: any) {
 
           if(error) setError(`${error}`)
           // else {
-          //     supabase.auth.api.inviteUserByEmail("a@b.com", {redirectTo: "aaa" })
+              // supabase.auth.api.sendMagicLinkEmail("a@b.com", {redirectTo: "aaa" })
           // }
 
           // createGame({invited: invited, signup_url:`${process.env.REACT_APP_DOMAIN}/signIn`}).then(res => {

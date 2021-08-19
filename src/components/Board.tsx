@@ -1,5 +1,5 @@
 import React from 'react';
-import RGL from "react-grid-layout";
+import GridLayout from "react-grid-layout";
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { SizeMe } from 'react-sizeme';
@@ -28,52 +28,16 @@ export interface PieceTray {
 }
 
 interface BoardProps {
-  gameState: [Piece[], PieceTray[]];
+  gameState: [Piece[],PieceTray[]];
   editable: boolean;
   setGameState: any;
 }
 
 export default function Board(props:BoardProps) {
 
-  const staticLayout = [
-    {i: 'empty-top', x: 0, y: 0, w: 17, h: 1, static: true},
-    {i: 'empty-left', x: 0, y: 1, w: 1, h: 15, static: true},
-    {i: 'empty-right', x: 16, y: 1, w: 1, h: 15, static: true},
-    {i: 'empty-bottom', x: 0, y: 16, w: 17, h: 1, static: true},
-    {i: 'empty-bottom2', x: 0, y: 17, w: 1, h: 1, static: true},
-    {i: 'empty-bottom3', x: 9, y: 17, w: 8, h: 1, static: true},
-  ];
-
-  const padEmpty = (board:Piece[]) => {
-    var ret = [];
-    var counter = 0;
-    for(let x = 1; x < 16; x++){
-      for(let y = 1; y < 16; y++){
-        if(!board.some(e => e.x === x && e.y === y)){
-          ret.push({i: `empty-${counter}`, x:x, y:y, w:1, h:1, static:true});
-          counter++;
-        }
-      }
-    }
-    return ret;
-  }
-
-
-  const mkLayout = (gameState:[Piece[],PieceTray[]], editable:boolean) => {
-    const empty = editable ? [] : padEmpty(gameState[0]);
-    return [
-      ...staticLayout, 
-      ...empty, 
-      ...gameState[0].map((e:Piece) => {return {...e, w:1, h:1}}), 
-      ...gameState[1].map((e:PieceTray) => {return {...e, y:17, w:1, h:1}})
-    ];
-  }
-
-  const unMkLayout = (gameState:[Piece[],PieceTray[]]) => (newLayout:any) => {
+  const unMkLayout = (newLayout:any) => {
     const boardAndTray = [...props.gameState[0], ...props.gameState[1]];
-
     const boardAndTraySet = new Set(boardAndTray.map(e => e.i))
-
     const fixedLayout = [...newLayout]
 
     for (const i in fixedLayout) {
@@ -93,9 +57,6 @@ export default function Board(props:BoardProps) {
       const n = boardAndTray.find((e:any) => e.i === p.i);
       return {...n, x: p.x}
     })
-
-   
-
     props.setGameState([newBoard, newLetters]);
   }
 
@@ -120,51 +81,79 @@ export default function Board(props:BoardProps) {
 
   };
 
+  const mkPiece = (board:Piece[]) => {
+    return board.map((e:Piece) => 
+      <Piece 
+        key={e.i}
+        data-grid={{x: e.x, y: e.y, w:1, h:1, i: e.i, static: e.static}}
+        letterValue={letterValueMap[e.letter]} 
+        saveBlankLetter={saveBlankLetter(e.i)} {...e}/>
+    );
+  }
 
-  const mkPieces = (board:any) => {
-    return board.map((e:any) => 
-      <Piece key={e.i} letterValue={letterValueMap[e.letter]} saveBlankLetter={saveBlankLetter(e.i)} {...e}/>
+  const mkPieceTray = (board:PieceTray[]) => {
+    return board.map((e:PieceTray) => 
+      <Piece 
+        key={e.i}
+        data-grid={{x: e.x, y: 17, w:1, h:1, i: e.i, static: e.static}}
+        letterValue={letterValueMap[e.letter]} 
+        saveBlankLetter={saveBlankLetter(e.i)} {...e}/>
     );
   }
 
 
 
   const blockMainBoard = (board:Piece[]) => {
-    return Array.from(Array(225-board.filter(e => e.y < 17).length).keys()).map(i => <div key={`empty-${i}`}></div>)
+    var ret = [];
+    var counter = 0;
+    for(let x = 1; x < 16; x++){
+      for(let y = 1; y < 16; y++){
+        const e = board.find(e => e.x === x && e.y === y)
+        if(e)
+          ret.push(<Piece 
+            key={e.i}
+            data-grid={{x: x, y: y, w:1, h:1, i: e.i, static: e.static}}
+            letterValue={letterValueMap[e.letter]} 
+            saveBlankLetter={saveBlankLetter(e.i)} {...e}/>)
+        else 
+          ret.push(<div 
+            key={`empty-${counter}`} 
+            data-grid={{i: `empty-${counter}`, x: x, y: y, w:1, h:1, static:true}}/>);
+        counter++;
+      }
+    }
+    return ret;
   }
 
   const { height } = useWindowDimensions();
 
-  console.log("gameState", props.gameState)
   return (
     <SizeMe>
     {({ size }) => 
-      <RGL 
+      <GridLayout 
       className="Board" 
-      layout={mkLayout(props.gameState, props.editable)} 
+      // layout={layout}
       cols={17}
       width={size.width && height ? Math.min(size.width, height) : 300/18*17}
       rowHeight={size.width && height ? Math.min(size.width, height)/17 : 300/17}
       margin={[0,0]}
       maxRows={18}
-      onLayoutChange={unMkLayout(props.gameState)}
-      onDragStart={(layout, oldItem, newItem, placeholder, e, element) => {
+      onLayoutChange={unMkLayout}
+      onDragStart={(_layout, _oldItem, newItem) => {
         const e_input = document.getElementById(`${newItem.i}-input`);
         if(e_input) e_input.focus();
       }}
       compactType={null}
       isResizable={false}
     >
-      <div key="empty-top"></div>
-      <div key="empty-left"></div>
-      <div key="empty-right"></div>
-      <div key="empty-bottom"></div>
-      <div key="empty-bottom2"></div>
-      <div key="empty-bottom3"></div>
-      {mkPieces(props.gameState[0])}
-      {mkPieces(props.gameState[1])}
-      {!props.editable ? blockMainBoard(props.gameState[0]) : []}
-    </RGL>}
+      <div key="empty-top" data-grid={{x: 0, y: 0, w: 17, h: 1, static: true}}></div>
+      <div key="empty-left" data-grid={{x: 0, y: 1, w: 1, h: 15, static: true}}></div>
+      <div key="empty-right" data-grid={{x: 16, y: 1, w: 1, h: 15, static: true}}></div>
+      <div key="empty-bottom" data-grid={{x: 0, y: 16, w: 17, h: 1, static: true}}></div>
+      <div key="empty-bottom2" data-grid={{x: 0, y: 17, w: 1, h: 1, static: true}}></div>
+      <div key="empty-bottom3" data-grid={{x: 9, y: 17, w: 8, h: 1, static: true}}></div>
+      {[...(!props.editable ? blockMainBoard(props.gameState[0]) : mkPiece(props.gameState[0])), ...mkPieceTray(props.gameState[1])]}
+    </GridLayout>}
   </SizeMe>
   );
 }
