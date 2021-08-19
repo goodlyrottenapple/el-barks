@@ -233,12 +233,12 @@ export default function Game(props:any) {
 
   // const updateBoard = functions().httpsCallable('updateBoard');
 
-  const getNextTurn = (i:number, ps:any[]):number => {
-    if(ps.reduce((allFinished, p) => allFinished && (p.status === "finished" || p.status === "winner"), true)) return -1;
-    const next = (i+1)%ps.length;
-    if(ps[next].status === "finished") return getNextTurn(next, ps)
-    else return next
-  }
+  // const getNextTurn = (i:number, ps:any[]):number => {
+  //   if(ps.reduce((allFinished, p) => allFinished && (p.status === "finished" || p.status === "winner"), true)) return -1;
+  //   const next = (i+1)%ps.length;
+  //   if(ps[next].status === "finished") return getNextTurn(next, ps)
+  //   else return next
+  // }
 
 
   async function updateBoard(updatedBoard:Piece[], updatedTray: PieceTray[], newScore:number) {
@@ -371,7 +371,7 @@ export default function Game(props:any) {
     updateBoard(updatedBoard, gameCurrentState[1], score)
   }
 
-  const gameIsFinished = false // userTurn === -1 || passCounter === publicPlayers.length
+  // const gameIsFinished = userTurn === -1 || passCounter === publicPlayers.length
   // const isWinner = () => {
   //   console.log("is winner...", publicPlayers);
   //   let winnerID

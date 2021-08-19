@@ -102,7 +102,7 @@ export const checkIfAllConnected = (words: Array<Piece[]>) => {
   }
   while(dirty) {
     dirty = false;
-    let current = new Set(wordSets[0]);
+    var current = new Set(wordSets[0]);
     // console.log("current in this round", current);
     let newSets = [];
     for(let i = 1; i < wordSets.length; i++) {
