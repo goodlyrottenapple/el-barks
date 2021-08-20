@@ -49,7 +49,7 @@ export default function SignIn(props: any) {
       <div className="Body">
       {!emailSent ? 
         <div className="Login">
-          <h3>It looks like you have not played el!barks before.</h3>
+          <h3>It looks like you have not played EL!BARKS before.</h3>
           <h3>Please log in using your email address:</h3>
           <input 
             name="email"
