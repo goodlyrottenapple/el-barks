@@ -148,6 +148,8 @@ export default function Home(props: any) {
     setInvited(selectedOption.map((e:any) => e.value))
   }
 
+  const archivedGames = games.filter(g => g.status !== "active");
+
   return (<div className="Home">
       <div className="Header">
         <img alt="" src={require('../assets/logo.svg')}/>
@@ -162,14 +164,14 @@ export default function Home(props: any) {
           </div>
         <br/>
 
-        <Collapsible trigger="Archived games">
+        {archivedGames.length > 0 && <Collapsible trigger="Archived games">
           <div className="Games row">
-            {games.filter(g => g.status !== "active").map((g: GameInfo) => {
+            {archivedGames.map((g: GameInfo) => {
               return <GameInfoCard key={g.game_id} gameInfo={g} 
               />
             })}
           </div>
-        </Collapsible>
+        </Collapsible>}
       </div>
 
       <ReactModal className="ErrorModal" appElement={document.getElementById('root') as HTMLElement} isOpen={!(error === null)}>
