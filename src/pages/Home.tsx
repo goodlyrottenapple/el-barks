@@ -4,12 +4,12 @@ import ReactModal from 'react-modal';
 import Loader from 'react-loader-spinner';
 import CreatableSelect from 'react-select/creatable';
 
-import GameInfoCard from '../components/GameInfoCard';
+import GameInfoCard, { GameInfo } from '../components/GameInfoCard';
 import { supabase } from '../helpers/SupabaseClient';
 import './Home.css'
+import '../helpers/flexboxgrid.css'
 
-
-
+import Collapsible from 'react-collapsible';
 
 const customStyles = {
   option: (provided:any, state:any) => ({
@@ -35,14 +35,12 @@ export default function Home(props: any) {
   const [friends, setFriends] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string|null>(null);
   const [newGameModal, setNewGameModal] = useState(false);
-  const [games, setGames] = useState<string[]>([]);
+  const [games, setGames] = useState<GameInfo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [invited, setInvited] = useState<string[]>([]);
 
-
   useEffect(() => {
     getProfile();
-    getGames();
   }, [props.session])
 
   async function getProfile() {
@@ -62,8 +60,9 @@ export default function Home(props: any) {
 
       if (data) {
         setFriends(new Set(data.friends))
-        // setGames(data.games)
       }
+
+      await getGames();
     } catch (error) {
       alert(error.message)
     } finally {
@@ -74,58 +73,43 @@ export default function Home(props: any) {
 
   async function getGames() {
     try {
-      setLoading(true)
-      const user = props.session.user
 
-      let { data, error, status } = await supabase
-        .from('game_participants')
-        .select(`game_id`)
-        .eq('player_id', user?.id)
+      const { data,  error } = await supabase
+        .rpc('view_all_games', { player_id: props.session.user?.id })
 
-      if (error && status !== 406) {
+      if (error) {
         throw error
       }
 
       if (data) {
-        console.log(data)
-        setGames(data.map(({game_id}) => game_id))
+        setGames(data as any)
       }
     } catch (error) {
       alert(error.message)
-    } finally {
-      setLoading(false)
     }
   }
 
 
+  async function cancelGame(id: String) {
+    try {
 
+      const { data,  error } = await supabase
+        .rpc('cancel_game', { game_id: id })
 
-  // useEffect(() => {
-  //   try {
-  //     const unsubscribe = db.ref(`userGames/${props.uid}`).on("value", snapshot => {
-  //       setLoading(false)
-  //       if(snapshot) {
-  //         let newGames:any[] = [];
-  //         console.log("loading...")
-  //         snapshot.forEach((snap) => {
-  //           newGames.push({gameID:snap.key, ...snap.val()});
-  //         });
-  //         setGames(newGames);
-  //       }
-  //     });
-  //     return () => (unsubscribe as any)();
-  //   } catch (error) {
-  //     console.error(error.message);
-  //   }
-
-  // }, [props.uid]);
+      if (error) {
+        throw error
+      }
+    } catch (error) {
+      alert(error.message)
+    }
+  }
 
 
   useEffect(() => {
     supabase
       .from(`game_participants:player_id=eq.${props.session.user?.id}`)
       .on('*', _payload => {
-        // console.log('Change received!', payload)
+        console.log('Change received!', _payload)
         getGames();
       })
       .subscribe()
@@ -171,21 +155,22 @@ export default function Home(props: any) {
       </div>
       <div className="Body">
         <h1>Current games</h1>
-        <div className="Games">
+          <div className="Games row">
+            {games.filter(g => g.status === "active").map((g: GameInfo) => {
+              return <GameInfoCard key={g.game_id} gameInfo={g} removeGame={() => cancelGame(g.game_id)} />
+            })}
+            <GameInfoCard onClick={() => setNewGameModal(true)} />
+          </div>
+        <br/>
 
-        {games.map((e,i) => {
-          console.log(e);
-          return <GameInfoCard key={e} session gameId={e} removeGame={() => {
-            console.log("deleting"); 
-            const newGames = games.filter((_,j) => i !== j);
-            setGames(newGames)
-            // updateGame(newGames);
-          }} setLoading={setLoading} {...e}/>
-        })}
-
-        <GameInfoCard newGame onClick={() => setNewGameModal(true)} session />
-
-        </div>
+        <Collapsible trigger="Archived games">
+          <div className="Games row">
+            {games.filter(g => g.status !== "active").map((g: GameInfo) => {
+              return <GameInfoCard key={g.game_id} gameInfo={g} 
+              />
+            })}
+          </div>
+        </Collapsible>
       </div>
 
       <ReactModal className="ErrorModal" appElement={document.getElementById('root') as HTMLElement} isOpen={!(error === null)}>
@@ -262,15 +247,6 @@ export default function Home(props: any) {
             .rpc('new_game', { originator: supabase.auth.user()?.email, players: invited })
 
           if(error) setError(`${error}`)
-          // else {
-              // supabase.auth.api.sendMagicLinkEmail("a@b.com", {redirectTo: "aaa" })
-          // }
-
-          // createGame({invited: invited, signup_url:`${process.env.REACT_APP_DOMAIN}/signIn`}).then(res => {
-          //   // Read result of the Cloud Function.
-          //   console.log("added: ", res);
-          //   setGames([...games, res])
-          // }).catch(error => console.error(error))
         }}>Invite</button>
         <button className="Button White" onClick={() => setNewGameModal(false)}>Cancel</button>
       </ReactModal>

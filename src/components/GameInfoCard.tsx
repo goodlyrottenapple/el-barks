@@ -4,73 +4,29 @@ import { Redirect } from "react-router-dom";
 import ReactModal from 'react-modal';
 import BoardPreview from './BoardPreview';
 import { RiAddLine, RiCloseLine } from 'react-icons/ri';
-import { FaRegClock, FaGamepad, FaMedal } from 'react-icons/fa';
+import { FaRegClock, FaGamepad, FaMedal, FaBan } from 'react-icons/fa';
 import { GiPlasticDuck } from 'react-icons/gi';
 import Loader from 'react-loader-spinner';
-import { supabase } from '../helpers/SupabaseClient';
+
+import { Player } from '../pages/Game';
 
 import './GameInfoCard.css';
 
-export default function GameInfoCard(props: any) {
+export interface GameInfo {
+  game_id: string;
+  status: "active" | "finished" | "cancelled";
+  players: Player[];
+  started_on: Date;
+  board: any[];
+}
 
-  const [board, setBoard] = useState([]);
-  const [players, setPlayers] = useState([]);
+export default function GameInfoCard(props: {key?: any; gameInfo? : GameInfo; onClick?: () => void; removeGame?: () => void;}) {
+
   const [cancelGame, setCancelGame] = useState(false);
   const [redirect, setRedirect] = useState(false);
-  const [startedOn, setStartedOn] = useState<Date | null>();
-
-  useEffect(() => {
-    if(props.gameId) {
-      getGame(props.gameId)
-      getPlayers(props.gameId)
-    }
-  }, [props.gameId, props.session]);
-
-  async function getGame(gameId: string) {
-    try {
-
-      let { data, error, status } = await supabase
-        .from('game_board')
-        .select(`board, started_on`)
-        .eq('game_id', gameId)
-        .single()
-
-      if (error && status !== 406) {
-        throw error
-      }
-
-      if (data) {
-        setBoard(data.board)
-        setStartedOn(data.started_on)
-      }
-    } catch (error) {
-      alert(error.message)
-    }
-  }
-
-
-  async function getPlayers(gameId: string) {
-    try {
-      const { data,  error } = await supabase
-        .rpc('view_game_status', { game_id: gameId })
-
-      if (error) {
-        throw error
-      }
-
-      if (data) {
-        setPlayers(data as any)
-      }
-    } catch (error) {
-      alert(error.message)
-    }
-  }
-
-
-
-  // const cancelGameFn = functions().httpsCallable('cancelGame');
-
-  const statusIcon = (status:string) => {
+  
+  const statusIcon = (status:string, gameStatus: string) => {
+    if(gameStatus == "cancelled") return <FaBan className="Status Cancelled"/>
     switch(status){
       case "pending": return <FaRegClock className="Status Pending"/>
       case "finished": return <GiPlasticDuck className="Status Ended"/>
@@ -79,48 +35,49 @@ export default function GameInfoCard(props: any) {
     }
   }
 
-  if (props.newGame) 
-    return <div className="GameInfoCard" onClick={props.onClick}>
+  if (props.gameInfo) {
+    if (redirect)
+      return <Redirect push to={`/${props.gameInfo.game_id}`}/>
+
+    return props.gameInfo.players.length === 0 ? 
+        <div className="GameInfoCard col-xs-12 col-sm-12 col-md-6 col-lg-4">
+          <div className="Loader">
+            <Loader
+              type="ThreeDots"
+              color="#E63328"
+              height={100}
+              width={100}
+            />
+          </div>
+        </div> 
+      :
+        <div className="GameInfoCard col-xs-12 col-sm-12 col-md-6 col-lg-4" onClick={() => setRedirect(true)}>
+          <BoardPreview size={200} board={props.gameInfo.board} gameID={props.gameInfo.game_id}/>
+
+          <div className="GameInfo">
+            {props.removeGame && <div className="CancelGame" onClick={e => {e.stopPropagation(); setCancelGame(true)}}><RiCloseLine/></div>}
+            <span className="Date">Started on {new Date(props.gameInfo.started_on).toLocaleString(undefined)}</span>
+            <h4 style={{marginBottom: '7px', marginTop:'5px'}}>Players</h4>
+            <ul>{props.gameInfo.players.map((p:Player, i) => 
+              <li key={`li-${props.gameInfo!.game_id}-${i}`}><div>{p.email}</div> {statusIcon(p.status, props.gameInfo!.status)}</li>)}
+            </ul>
+          </div>
+          <ReactModal className="ErrorModal" appElement={document.getElementById('root') as HTMLElement} isOpen={cancelGame}>
+            <h1>Cancel game...</h1>
+            <p>Are you sure you want to cancel this game?</p>
+            <button className="Button WhiteRed" style={{marginRight:'5px'}} onClick={e => {
+              e.stopPropagation();
+              setCancelGame(false);
+              // props.setLoading(true);
+              if(props.removeGame) props.removeGame()
+              // cancelGameFn({gameID: props.gameID})
+                // .catch(error => console.error(error))
+            }}>Yes, cancel</button><button className="Button WhiteRed" onClick={e => {e.stopPropagation(); setCancelGame(false)}}>No, keep playing</button>
+          </ReactModal>
+        </div>
+  } else {
+    return <div className="GameInfoCard col-xs-12 col-sm-12 col-md-6 col-lg-4" onClick={props.onClick}>
         <div className="NewGame"><RiAddLine className="AddIcon"/>New game</div>
       </div>
-
-  if (redirect)
-    return <Redirect push to={`/${props.gameId}`}/>
-
-  return players.length === 0 ? 
-      <div className="GameInfoCard">
-        <div className="Loader">
-          <Loader
-            type="ThreeDots"
-            color="#E63328"
-            height={100}
-            width={100}
-          />
-        </div>
-      </div> 
-    :
-      <div className="GameInfoCard" onClick={() => setRedirect(true)}>
-        <BoardPreview size={200} board={board} gameID={props.gameId}/>
-
-        <div className="GameInfo">
-          <div className="CancelGame" onClick={e => {e.stopPropagation(); setCancelGame(true)}}><RiCloseLine/></div>
-          <span className="Date">Started on {new Date(startedOn!).toLocaleString(undefined)}</span>
-          <h4 style={{marginBottom: '7px', marginTop:'5px'}}>Players</h4>
-          <ul>{players.map((p:any, i) => 
-            <li key={`li-${props.gameId}-${i}`}><div>{p.email}</div> {statusIcon(p.status)}</li>)}
-          </ul>
-        </div>
-        <ReactModal className="ErrorModal" appElement={document.getElementById('root') as HTMLElement} isOpen={cancelGame}>
-          <h1>Cancel game...</h1>
-          <p>Are you sure you want to cancel this game?</p>
-          <button className="Button WhiteRed" style={{marginRight:'5px'}} onClick={e => {
-            e.stopPropagation();
-            setCancelGame(false);
-            // props.setLoading(true);
-            props.removeGame()
-            // cancelGameFn({gameID: props.gameID})
-              // .catch(error => console.error(error))
-          }}>Yes, cancel</button><button className="Button WhiteRed" onClick={e => {e.stopPropagation(); setCancelGame(false)}}>No, keep playing</button>
-        </ReactModal>
-      </div>
+  }
 }

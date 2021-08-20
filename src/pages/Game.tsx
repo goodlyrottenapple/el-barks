@@ -13,6 +13,16 @@ import Board, { Piece, PieceTray } from '../components/Board';
 import { calculateScore, getNextEmptySpaceInTray, getAllWords, checkIfAllConnected } from '../helpers/Game';
 import './Game.css';
 
+
+
+export interface Player {
+  email: string;
+  status: "winner" | "finished" | "playing" | "skipped";
+  player_id: string;
+  score: number;
+  blank?:boolean,
+}
+
 export default function Game(props:any) {
   const gameId = props.match.params.id;
   const [loading, setLoading] = useState(true);
@@ -21,12 +31,13 @@ export default function Game(props:any) {
   const [gameCurrentState, setGameCurrentState] = useState<[Piece[], PieceTray[]]>([[], []]);
   const [boardServerState, setBoardServerState] = useState<Piece[]>([]);
 
+  const [gameStatus, setGameStatus] = useState<"active" | "finished" | "cancelled">("active");
 
   const [dictionary,setDictionary] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
 
-  const [publicPlayers, setPublicPlayers] = useState<any[]>([]);
+  const [publicPlayers, setPublicPlayers] = useState<Player[]>([]);
   const [endGameModal, setEndGameModal] = useState(false);
 
   const popMP3 = require('../assets/pop.mp3')
@@ -63,6 +74,7 @@ export default function Game(props:any) {
         }
         getLetterTray();
         getPlayers(gameId);
+        setGameStatus(payload.new.status);
       })
       .subscribe()
 
@@ -74,7 +86,7 @@ export default function Game(props:any) {
 
       let { data, error, status } = await supabase
         .from('game_board')
-        .select(`board`)
+        .select(`board, status`)
         .eq('game_id', gameId)
         .single()
 
@@ -87,6 +99,7 @@ export default function Game(props:any) {
         const no_dups : any[] = Array.from(new Set(data.board));
         setGameCurrentState(([_, tray]) => [no_dups, tray]);
         setBoardServerState(no_dups);
+        setGameStatus(data.status)
       }
     } catch (error) {
       alert(error.message)
@@ -125,9 +138,6 @@ export default function Game(props:any) {
     }
   }
 
-
-
-
   async function getPlayers(gameId: string) {
     try {
       const { data,  error } = await supabase
@@ -145,101 +155,32 @@ export default function Game(props:any) {
     }
   }
 
-  useEffect(() => {
-    getBoard()
-    getLetterTray()
-    if (gameId) getPlayers(gameId)
+  async function initLoadData(gid: string) {
+    await Promise.all([getBoard(), getLetterTray(), getPlayers(gid)]);
     setLoading(false)
+  }
+
+  useEffect(() => {
+    if (gameId) initLoadData(gameId)
   }, [gameId]);
 
+  async function skipRound() {
+    try {
+      const { error } = await supabase
+        .rpc('skip_round', { 
+          game_id: gameId, 
+          player_id: props.session.user.id
+        })
 
-  // useEffect(() => {
-  //   if(playerID !== -1) {
-  //     try {
-  //       const unsubscribe = db.ref(`game/${gameID}/public`).on("value", snapshot => {
-  //         setLoading(false)
-  //         if(snapshot) {
-  //           const data = snapshot.val()
-  //           console.log("board is set", data);
-  //           if(data && data.board) setBoard(data.board);
-  //           if(data && data.userTurn != null) {
-  //             console.log("setting turn to ", data.userTurn === playerID, data.userTurn, playerID)
-  //             setUserTurn(data.userTurn)
-  //           }
-  //           if(data && data.userTurn != null) {
-  //             console.log("setting turn to ", data.userTurn === playerID, data.userTurn, playerID)
-  //             setUserTurn(data.userTurn)
-  //             if(data.userTurn === playerID) {
-  //               console.log("my turn", volume)
-  //               if(volume) playPop();
-  //             }
-  //           }
-  //           if(data && data.turnCounter != null) setTurnCounter(data.turnCounter)
-  //           if(data && data.passCounter != null) setPassCounter(data.passCounter)
-  //           if(data && data.players) {
-  //             setPublicPlayers(data.players)
-
-  //             if(data.players[playerID].status === "pending"){
-  //               db.ref().update({[`game/${gameID}/public/players/${playerID}/status`]: "playing"});
-  //             }
-  //           }
-  //         }
-  //       });
-  //       return () => (unsubscribe as any)();
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   }
-  // }, [playerID]);
-
-
-  // useEffect(() => {
-  //   try {
-  //     const unsubscribe = db.ref(`game/${gameID}/scrabbleBag`).on("value", snapshot => {
-  //       if(snapshot) {
-  //         const data = snapshot.val()
-  //         if(data) setScrabbleBag(data);
-  //         else {
-  //           console.log("seeting scrabble bag to empty!")
-  //           setScrabbleBag([])
-  //         }
-  //       }
-  //     });
-  //     return () => (unsubscribe as any)();
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // }, []);
-
-
-  // useEffect(() => {
-  //   if(playerID !== -1) {
-  //     try {
-  //       const unsubscribe = db.ref(`game/${gameID}/private/${playerID}`).on("value", snapshot => {
-  //         setLoading(false)
-  //         if(snapshot) {
-  //           const data = snapshot.val()
-  //           console.log("letters are set", data);
-  //           if(data && data.letters) setLetters(data.letters);
-            
-  //         }
-  //       });
-  //       return () => (unsubscribe as any)();
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   }
-  // }, [playerID]);
-
-  // const updateBoard = functions().httpsCallable('updateBoard');
-
-  // const getNextTurn = (i:number, ps:any[]):number => {
-  //   if(ps.reduce((allFinished, p) => allFinished && (p.status === "finished" || p.status === "winner"), true)) return -1;
-  //   const next = (i+1)%ps.length;
-  //   if(ps[next].status === "finished") return getNextTurn(next, ps)
-  //   else return next
-  // }
-
+      if (error) {
+        throw error
+      }
+      
+      setEndGameModal(false);
+    } catch (error) {
+      alert(error.message)
+    }
+  }
 
   async function updateBoard(updatedBoard:Piece[], updatedTray: PieceTray[], newScore:number) {
     setGameCurrentState([updatedBoard, updatedTray])
@@ -256,50 +197,10 @@ export default function Game(props:any) {
       if (error) {
         throw error
       }
-      
       setLoading(false);
     } catch (error) {
       alert(error.message)
     }
-
-    // const updates:any = {};
-    // updates[`game/${gameID}/public/board`] = updatedBoard;
-    // const[newBag, newLetters] = topUpLetters(scrabbleBag, gameState[1])
-    // console.log("new letters:", newLetters);
-    // updates[`game/${gameID}/scrabbleBag`] = newBag.length !== 0 ? newBag : null
-
-    // updates[`game/${gameID}/private/${playerID}/letters`] = newLetters
-    // updates[`game/${gameID}/public/players/${playerID}/potentialEndGameBonus`] = calculateScore([newLetters])
-    // if(newLetters.length === 0) {
-    //   console.log("player finished the game...")
-    //   updates[`game/${gameID}/public/players/${playerID}/status`] = "finished";
-
-    //   console.log("player id", playerID)
-    //   let endGameBonus = 0;
-
-    //   publicPlayers.forEach((p,i) => {
-    //     if(i !== playerID) endGameBonus += p.potentialEndGameBonus
-    //   })
-    //   console.log("end game bonus...", endGameBonus)
-
-    //   updates[`game/${gameID}/public/players/${playerID}/score`] = 
-    //     publicPlayers[playerID].score + 
-    //     newScore + 
-    //     endGameBonus;
-    //   updates[`game/${gameID}/public/userTurn`] = -1;
-    // } else {
-    //   updates[`game/${gameID}/public/userTurn`] = getNextTurn(userTurn, publicPlayers);
-    //   updates[`game/${gameID}/public/players/${playerID}/score`] = publicPlayers[playerID].score + newScore;
-    // }
-
-    // console.log("turnCounter:", turnCounter)
-    // updates[`game/${gameID}/public/turnCounter`] = turnCounter+1;
-    // updates[`game/${gameID}/public/passCounter`] = 0;
-
-    // db.ref().update(updates).catch(e => {
-    //   console.error("error on update", e)
-    //   setError("Oh dear... something fishy is going on... please refresh this page.")
-    // })
   }
   const validateBoard = (oldBoard: Piece[], newBoard: Piece[]) => {
     setLoading(true);
@@ -371,37 +272,6 @@ export default function Game(props:any) {
     updateBoard(updatedBoard, gameCurrentState[1], score)
   }
 
-  // const gameIsFinished = userTurn === -1 || passCounter === publicPlayers.length
-  // const isWinner = () => {
-  //   console.log("is winner...", publicPlayers);
-  //   let winnerID
-  //   let maxScore = -1
-  //   publicPlayers.forEach((p:any,i:number) => {
-  //     if(p.score > maxScore){
-  //       maxScore = p.score
-  //       winnerID = i
-  //     }
-  //   })
-  //   if(winnerID === playerID) return true;
-  //   return false
-  // }
-
-  // const setWinner = () => {
-  //   if(publicPlayers[playerID].status !== "winner"){
-  //     publicPlayers[playerID].status = "winner"
-  //     // db.ref().update({[`game/${gameID}/public/players/${playerID}/status`]: "winner"})
-  //   }
-  //   return true
-  // }
-
-  // const setFinished = () => {
-  //   if(publicPlayers[playerID].status !== "finished"){
-  //     publicPlayers[playerID].status = "finished"
-  //     // db.ref().update({[`game/${gameID}/public/players/${playerID}/status`]: "finished"})
-  //   }
-  //   return true
-  // }
-
   return (
     <div className="Game">
       <button className={`Sound${volume ? '' : ' Mute'}`} onClick={() => setVolume(!volume)}>{volume ? <FaVolumeUp/> : <FaVolumeOff/>}</button>
@@ -436,21 +306,30 @@ export default function Game(props:any) {
       setGameState={setGameCurrentState} 
       editable={isMyTurn}/>
 
-    {/* <ReactModal className="WinModal" appElement={document.getElementById('root') as HTMLElement} isOpen={
-      playerID !== -1 && 
-      gameIsFinished && 
-      publicPlayers.length > playerID && 
-      isWinner() &&
-      setWinner()
-    }>
+    <ReactModal 
+      className="WinModal" 
+      appElement={document.getElementById('root') as HTMLElement} 
+      isOpen={gameStatus === "finished" && publicPlayers.find(p => p.player_id == props.session.user.id)?.status == "winner"}
+    >
       <h1>You won!</h1>
       <p>Congratulations on winning this game.</p>
-    </ReactModal> */}
+    </ReactModal>
 
-      {/* <ReactModal className="EndModal" appElement={document.getElementById('root') as HTMLElement} isOpen={playerID !== -1 && gameIsFinished && publicPlayers.length > playerID && !isWinner() && setFinished()}>
+    <ReactModal 
+      className="EndModal" 
+      appElement={document.getElementById('root') as HTMLElement} 
+      isOpen={gameStatus === "finished" && publicPlayers.find(p => p.player_id == props.session.user.id)?.status == "finished"}>
       <h1>Oh well...</h1>
       <p>You'll get them next time!</p>
-    </ReactModal> */}
+    </ReactModal>
+
+    <ReactModal 
+      className="ErrorModal" 
+      appElement={document.getElementById('root') as HTMLElement} 
+      isOpen={gameStatus === "cancelled"}>
+      <h1>This game was cancelled! Booo...</h1>
+      <p>Maybe you could start a new game. Just go back to the main menu and invite your frinds!</p>
+    </ReactModal>
 
     <ReactModal className="ErrorModal" appElement={document.getElementById('root') as HTMLElement} isOpen={!(error === null)}>
       <h1>Oops...</h1>
@@ -472,19 +351,8 @@ export default function Game(props:any) {
     <ReactModal className="EndModal" appElement={document.getElementById('root') as HTMLElement} isOpen={endGameModal}>
         <h1>Skip round...</h1>
         <p>Are you sure you want to skip this round?</p>
-        <button className="Button WhiteBlack" style={{marginRight:'5px'}} onClick={e => {
-          setEndGameModal(false);
-          // db.ref().update({
-          //   // [`game/${gameID}/public/players/${playerID}/status`]: "finished",
-          //   // [`game/${gameID}/public/players/${playerID}/score`]: publicPlayers[playerID].score - calculateScore([gameState[1]]),
-          //   [`game/${gameID}/public/userTurn`]: getNextTurn(userTurn, publicPlayers),
-          //   [`game/${gameID}/public/turnCounter`]: turnCounter+1,
-          //   [`game/${gameID}/public/passCounter`]: passCounter+1
-          // }).catch(e => {
-          //   console.error("error on update", e)
-          //   setError("Oh dear... something fishy is going on... please refresh this page.")
-          // })
-        }}>Yes</button><button className="Button WhiteBlack" onClick={e => {setEndGameModal(false)}}>No, play this round</button>
+        <button className="Button WhiteBlack" style={{marginRight:'5px'}} onClick={_ => skipRound()}>Yes</button>
+        <button className="Button WhiteBlack" onClick={_ => setEndGameModal(false)}>No, play this round</button>
       </ReactModal>
   </div>
   );

@@ -22,9 +22,9 @@ export default function SignIn(props: any) {
       const { error } = await supabase.auth.signIn(
       { 
         email 
-      }, {
-        // redirectTo: 'https://example.com/welcome'
-      })
+      }, process.env.REACT_APP_BASE_URL ? {
+        redirectTo: process.env.REACT_APP_BASE_URL
+      } : {})
       if (error) throw error
       setEmailSent(true)
       // alert('Check your email for the login link!')

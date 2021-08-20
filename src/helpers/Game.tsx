@@ -20,17 +20,17 @@ export const calculateScore = (words: Array<any[]>) => {
 
 
 
-export const topUpLetters = (bag:any[], tray:any[]) => {
-  const newBag = [...bag];
-  const newLetters = newBag.splice(0, 7-tray.length);
-  const newTray = [...tray];
+// export const topUpLetters = (bag:any[], tray:any[]) => {
+//   const newBag = [...bag];
+//   const newLetters = newBag.splice(0, 7-tray.length);
+//   const newTray = [...tray];
 
-  newLetters.forEach(l => {
-    const x = getNextEmptySpaceInTray(newTray);
-    newTray.push({...l, x:x})
-  })
-  return [newBag, newTray]
-}
+//   newLetters.forEach(l => {
+//     const x = getNextEmptySpaceInTray(newTray);
+//     newTray.push({...l, x:x})
+//   })
+//   return [newBag, newTray]
+// }
 
 
 export const getNextEmptySpaceInTray = (tray:any[]) => {

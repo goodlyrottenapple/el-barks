@@ -1,15 +1,17 @@
 .GameInfoCard {
   cursor: pointer;
-  border: 2px solid #E63328;
+  outline: 2px solid #E63328;
+  outline-offset: -4px;
   /*outline-offset: -5px;*/
   display: flex;
   position: relative;
-  margin: 5px;
-  flex-grow:1;
+  /* margin: 5px; */
+  /* flex-grow:1; */
+  /* flex-flow: row wrap; */
   /*flex-shrink:1;*/
-  min-width:460px;
-  width:460px;
-  height: 200px;
+  /* min-width:240px; */
+  /* width:460px; */
+  min-height: 200px;
   color: black;
   text-decoration: none;
 }
@@ -39,10 +41,16 @@
 }
 
 
+.Date {
+  padding-bottom: 20px;
+}
+
+
 .GameInfo {
   overflow: hidden;
   margin: 10px;
-  width: 100%;
+  /* max-width: 100%; */
+  flex-grow: 1;
 }
 
 .GameInfo >.Date {
@@ -77,19 +85,15 @@
   text-overflow:ellipsis;
 }
 
-.GameInfoCard li > svg {
-  /*padding-bottom: 3px;*/
-}
-
 .Status {
-  margin-bottom: -3px;
+  margin-bottom: 2px;
   color: #10ADE5;
 }
 
 .Playing {
   color: #31AB59;
   font-size: 20px;
-  margin-bottom: -4px;
+  margin-bottom: -2px;
 }
 
 .Pending {
@@ -102,4 +106,10 @@
 .Winner {
   font-size: 16px;
   color: #FFCC00;
+  margin-bottom: 2px;
+}
+
+.Cancelled {
+  font-size: 16px;
+  color: #E63328;
 }

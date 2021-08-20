@@ -33,7 +33,7 @@
 
 .Header img {
 	display: block;
-	height: 40vh;
+	max-height: 40vh;
 	width: auto;
 	margin: auto;
 }
@@ -58,10 +58,32 @@
 
 
 .Games {
-	display: flex;
-	flex-flow: row wrap;
+	padding: 15px;
 }
 
 .LoadingModal {
 	outline: 0;
+}
+
+.Collapsible__trigger {
+	cursor: pointer;
+
+  display: block;
+  text-decoration: none;
+  position: relative;
+	font-family: Monteka;
+	font-size: 2em;
+	color: #E63328; 
+}
+.Collapsible__trigger:after {
+	content: 'ᐯ'; 
+	font-size: 0.7em;
+	position: absolute;
+	left: 285px;
+	top: 5px;
+	display: block;
+	transition: transform 300ms; 
+}
+.Collapsible__trigger.is-open:after {
+	transform: rotateZ(180deg); 
 }

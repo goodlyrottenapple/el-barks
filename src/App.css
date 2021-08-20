@@ -60,12 +60,19 @@ button {
 
 
 .ErrorModal, .EditModal, .EndModal, .WinModal {
-  min-width: 600px;
+  /* min-width: 600px; */
   width: 50%;
   margin:auto;
   margin-top: calc(50vh - 300px);
   padding:20px;
   color: #E9E4D1;
+}
+
+.ErrorModal > .Button,
+.EditModal > .Button,
+.EndModal > .Button,
+.WinModal > .Button {
+  margin-top: 10px;
 }
 
 .ErrorModal {
@@ -92,6 +99,12 @@ button {
 
 .ErrorModal p {
   font-size: 20px;
+}
+
+@media only screen and (max-width: 900px) {
+  .ErrorModal, .EditModal, .EndModal, .WinModal {
+    width: 100%;
+  }
 }
 
 /*.ErrorModal button, .EditModal button {

@@ -20,6 +20,7 @@
     "email-validator": "^2.0.4",
     "query-string": "^6.12.1",
     "react": "^16.13.1",
+    "react-collapsible": "^2.8.3",
     "react-dom": "^16.13.1",
     "react-grid-layout": "git+https://github.com/goodlyrottenapple/react-grid-layout.git",
     "react-icons": "^3.10.0",
