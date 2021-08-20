@@ -46,6 +46,25 @@
 }
 
 
+@media only screen and (max-width: 550px) {
+  .Date {
+    padding-bottom: 15px;
+  }
+}
+
+
+@media only screen and (max-width: 440px) {
+  .Date {
+    padding-top: 30px;
+    padding-bottom: 5px;
+    font-size: 0.7em;
+  }
+
+  .Email {
+    font-size: 0.7em;
+  }
+}
+
 .GameInfo {
   overflow: hidden;
   margin: 10px;

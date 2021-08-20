@@ -27,7 +27,6 @@ export default function Game(props:any) {
   const gameId = props.match.params.id;
   const [loading, setLoading] = useState(true);
 
-  // const [prevBoard, setPrevBoard] = useState<Piece[]>([]);
   const [gameCurrentState, setGameCurrentState] = useState<[Piece[], PieceTray[]]>([[], []]);
   const [boardServerState, setBoardServerState] = useState<Piece[]>([]);
 

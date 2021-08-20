@@ -9,7 +9,6 @@ import './SignIn.css'
 
 
 export default function SignIn(props: any) {
-  // const [redirect, setRedirect] = useState();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState<string | undefined>();
   const [emailSent, setEmailSent] = useState(false);
@@ -27,43 +26,12 @@ export default function SignIn(props: any) {
       } : {})
       if (error) throw error
       setEmailSent(true)
-      // alert('Check your email for the login link!')
     } catch (error) {
       alert(error.error_description || error.message)
     } finally {
       setLoading(false)
     }
   }
-
-  // useEffect(() => {
-  //   if(props.userEmail) {
-  //     if(props.match.params.email && 
-  //       !(props.match.params.id === '-1' || props.match.params.id.startsWith('-1?')) &&
-  //       props.match.params.email === props.userEmail) {
-  //       console.log("going to game...")
-  //       setRedirect(`/game/${props.match.params.id}`)
-  //     }
-  //     else setRedirect('/');
-
-  //   } else if(auth().isSignInWithEmailLink(window.location.href)) {
-  //     const email = props.match.params.email;
-  //     // The client SDK will parse the code from the link for you.
-  //     auth().signInWithEmailLink(email, window.location.href)
-  //       .then(function(result) {
-  //         console.log("result:", result)
-  //         if(result && result.user) props.setUid(result.user.uid);
-  //         if(props.match.params.id === '-1' || props.match.params.id.startsWith('-1?')) setRedirect('/');
-  //         else setRedirect(`/game/${props.match.params.id}`)
-  //       })
-  //       .catch(function(error) {
-  //         console.error(error);
-  //         setRedirect('/');
-  //       });
-  //   } else {
-  //     setLoading(false);
-  //   }
-  // },[]);
-
 
   return loading ? 
     <div>
@@ -86,7 +54,6 @@ export default function SignIn(props: any) {
           <input 
             name="email"
             type="email" 
-            // value={email}
             onChange={event => {
               if(event.target.value) setEmail(event.target.value)
               setEmailIsValid(EmailValidator.validate(event.target.value))

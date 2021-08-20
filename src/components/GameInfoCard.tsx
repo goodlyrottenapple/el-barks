@@ -59,7 +59,7 @@ export default function GameInfoCard(props: {key?: any; gameInfo? : GameInfo; on
             <span className="Date">Started on {new Date(props.gameInfo.started_on).toLocaleString(undefined)}</span>
             <h4 style={{marginBottom: '7px', marginTop:'5px'}}>Players</h4>
             <ul>{props.gameInfo.players.map((p:Player, i) => 
-              <li key={`li-${props.gameInfo!.game_id}-${i}`}><div>{p.email}</div> {statusIcon(p.status, props.gameInfo!.status)}</li>)}
+              <li key={`li-${props.gameInfo!.game_id}-${i}`}><div className="Email">{p.email}</div> {statusIcon(p.status, props.gameInfo!.status)}</li>)}
             </ul>
           </div>
           <ReactModal className="ErrorModal" appElement={document.getElementById('root') as HTMLElement} isOpen={cancelGame}>

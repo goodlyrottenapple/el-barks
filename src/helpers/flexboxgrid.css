@@ -463,7 +463,7 @@
   }
 }
 
-@media only screen and (min-width: 62em) {
+@media only screen and (min-width: 69em) {
   .container {
     width: 61rem;
   }
@@ -678,7 +678,7 @@
   }
 }
 
-@media only screen and (min-width: 75em) {
+@media only screen and (min-width: 105em) {
   .container {
     width: 71rem;
   }

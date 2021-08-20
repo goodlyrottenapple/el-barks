@@ -14,7 +14,6 @@ import Collapsible from 'react-collapsible';
 const customStyles = {
   option: (provided:any, state:any) => ({
     ...provided,
-    // borderBottom: '1px dotted pink',
     color: 'blue',
     padding: 20,
   }),
